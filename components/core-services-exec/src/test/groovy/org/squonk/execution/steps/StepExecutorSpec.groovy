@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ class StepExecutorSpec extends Specification {
         context.start()
 
         when:
-        executor.execute(context)
+        executor.execute(context, null)
         def result = varman.getValue(new VariableKey(cellId, "output"), String.class)
 
         then:
@@ -126,7 +126,7 @@ class StepExecutorSpec extends Specification {
         context.start()
 
         when:
-        executor.execute(context)
+        executor.execute(context, null)
         def result = varman.getValue(new VariableKey(cellId, "output"), Integer.class)
 
         then:
@@ -172,7 +172,7 @@ class StepExecutorSpec extends Specification {
         context.start()
 
         when:
-        executor.execute(context)
+        executor.execute(context, null)
         def result = varman.getValue(new VariableKey(cellId, "output"), String.class)
 
         then:
@@ -220,7 +220,7 @@ class StepExecutorSpec extends Specification {
         context.start()
 
         when:
-        executor.execute(context)
+        executor.execute(context, null)
         def result = varman.getValue(new VariableKey(cellId, "output"), Dataset.class)
 
         then:
@@ -274,7 +274,7 @@ class StepExecutorSpec extends Specification {
         context.start()
 
         when:
-        executor.execute(context)
+        executor.execute(context, null)
         def result = varman.getValue(new VariableKey(cellId, "output"), SDFile.class)
         def mockTest = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(result.inputStream))
 

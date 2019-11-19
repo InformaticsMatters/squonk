@@ -464,6 +464,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
 //            dumpMapValues(message.getHeaders(), Level.INFO, "Body headers: ");
 
+            String auth = message.getHeader(ServiceConstants.HEADER_AUTH, String.class);
             String bHeader = message.getHeader("Content-Disposition", String.class);
             String bFieldName = IOUtils.readPropertyFromHttpHeader("name", bHeader);
 
@@ -494,7 +495,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 LOG.info("Found DataSource for field " + aFieldName + " of ContentType " + dataSource.getContentType());
             }
 
-            JobStatus jobStatus = jobManager.executeAsync(username, service, options, inputs);
+            JobStatus jobStatus = jobManager.executeAsync(username, service, options, inputs, auth);
 
             LOG.info("Job " + jobStatus.getJobId() + " had been submitted");
             String json = JsonHandler.getInstance().objectToJson(jobStatus);

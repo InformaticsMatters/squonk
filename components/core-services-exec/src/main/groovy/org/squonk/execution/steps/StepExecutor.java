@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ public class StepExecutor {
     }
 
 
-    public void execute(CamelContext context) throws Exception {
+    public void execute(CamelContext camelContext, String auth) throws Exception {
 
         StepDefinition[] stepDefs = jobdef.getSteps();
 
@@ -130,6 +130,7 @@ public class StepExecutor {
         LOG.info("Job output descriptors: " + Arrays.stream(jobOutputDescriptors)
                 .map((iod) -> iod.getName())
                 .collect(Collectors.joining(",")));
+        LOG.info("Is authenticated? " + (auth != null));
 
         StepDefinition currentStepDef = null;
         for (int i = 0; i < stepDefs.length; i++) {
@@ -141,7 +142,7 @@ public class StepExecutor {
             currentStep = step;
             steps.add(step);
             ServiceDescriptor sd = currentStepDef.getServiceDescriptor();
-            step.configure(jobId, currentStepDef.getOptions(), sd);
+            step.configure(jobId, currentStepDef.getOptions(), sd, camelContext, auth);
 
             // define details of the inputs
             final IODescriptor[] stepInputDescriptors = fetchIODescriptorsNotNull(currentStepDef.getInputs());
@@ -195,7 +196,7 @@ public class StepExecutor {
                         Object var = varman.getValue(key, d.getPrimaryType(), d.getSecondaryType());
                         LOG.info(String.format("Converting input variable %s from %s to %s", iod.getName(),
                                 d.getPrimaryType().getName(), iod.getPrimaryType().getName()));
-                        Object converted = context.getTypeConverter().convertTo(iod.getPrimaryType(), var);
+                        Object converted = camelContext.getTypeConverter().convertTo(iod.getPrimaryType(), var);
                         if (converted == null) {
                             throw new IllegalStateException(String.format("Can't convert input %s to %s",
                                     d.getPrimaryType().getName(), iod.getPrimaryType().getName()));
@@ -213,7 +214,7 @@ public class StepExecutor {
             }
 
             // execute
-            Map<String, Object> outputs = step.execute(stepInputs, context);
+            Map<String, Object> outputs = step.execute(stepInputs);
 
             // map the outputs to be the next inputs
             outputs.forEach((k, v) -> {
@@ -241,7 +242,7 @@ public class StepExecutor {
                     // data conversion needed
                     LOG.info(String.format("Converting output variable %s from %s to %s",
                             iod.getName(), value.getClass().getName(), iod.getPrimaryType().getName()));
-                    Object converted = context.getTypeConverter().convertTo(iod.getPrimaryType(), value);
+                    Object converted = camelContext.getTypeConverter().convertTo(iod.getPrimaryType(), value);
                     if (converted == null) {
                         throw new IllegalStateException(String.format("Can't convert output %s to %s",
                                 iod.getPrimaryType().getName(), iod.getPrimaryType().getName()));
@@ -252,7 +253,7 @@ public class StepExecutor {
         }
         if (statsRoute != null && statsList.size() > 0) {
             // send stats
-            ProducerTemplate pt = context.createProducerTemplate();
+            ProducerTemplate pt = camelContext.createProducerTemplate();
             pt.setDefaultEndpointUri(statsRoute);
             StatsRecorder recorder = new CamelRouteStatsRecorder(jobId, pt);
             recorder.recordStats(statsList);

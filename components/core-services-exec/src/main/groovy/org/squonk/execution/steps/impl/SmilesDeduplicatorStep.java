@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -51,11 +50,10 @@ public class SmilesDeduplicatorStep extends AbstractDatasetStep {
      * field named FIELD_OUTPUT_DATASET. 
      *
      * @param input
-     * @param camelContext
      * @throws Exception
      */
     @Override
-    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
+    protected Dataset doExecuteWithDataset(Dataset input) throws Exception {
         String canonicalSmilesField = getOption(OPTION_CANONICAL_SMILES_FIELD, String.class);
         if (canonicalSmilesField == null) {
             throw new IllegalStateException(OPTION_CANONICAL_SMILES_FIELD + " must be specified");

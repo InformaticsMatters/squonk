@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,12 @@ class DatasetWriterStepSpec extends Specification {
         DatasetWriterStep step = new DatasetWriterStep()
         step.configure("test write mols",
                 [:],
-                DatasetWriterStep.SERVICE_DESCRIPTOR
+                DatasetWriterStep.SERVICE_DESCRIPTOR,
+                null, null
         )
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds))
         def dataset = resultsMap["output"]
 
         then:

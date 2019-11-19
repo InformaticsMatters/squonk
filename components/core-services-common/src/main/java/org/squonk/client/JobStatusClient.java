@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,19 @@ public interface JobStatusClient {
      * @param totalCount The total number of work units, or null if unknown
      * @return The Job ID
      */
-    JobStatus submit(CellExecutorJobDefinition jobdef, String username, Integer totalCount) throws IOException;
+    default JobStatus submit(CellExecutorJobDefinition jobdef, String username, Integer totalCount) throws IOException {
+        return submit(jobdef, username, null, totalCount);
+    }
+
+    /** Submits a cell executor job for execution
+     *
+     * @param jobdef The Job definition
+     * @param username The squonk username
+     * @param accessToken The Keycloak access token
+     * @param totalCount The total number of work units, or null if unknown
+     * @return The Job ID
+     */
+    JobStatus submit(CellExecutorJobDefinition jobdef, String username, String accessToken, Integer totalCount) throws IOException;
 
     /** Creates an external job, assuming execution is handled separately
      *

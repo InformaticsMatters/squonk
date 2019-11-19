@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
@@ -72,9 +71,9 @@ public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetSte
     public static final String OPTION_DIRECTIVES = StepDefinitionConstants.DatasetSorter.OPTION_DIRECTIVES;
 
     @Override
-    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext camelContext) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
-        String directivesStr = getOption(OPTION_DIRECTIVES, String.class, findTypeConverter(camelContext));
+        String directivesStr = getOption(OPTION_DIRECTIVES, String.class, findTypeConverter());
         if (directivesStr == null) {
             throw new IllegalStateException("Sort directives must be defined as option named " + OPTION_DIRECTIVES);
         }

@@ -169,7 +169,7 @@ class JobManagerSpec extends Specification {
 
         when:
 
-        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": source])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": source], null)
         jobStatus = waitTillResultsReady(mgr, jobStatus)
 
         then:
@@ -197,7 +197,7 @@ class JobManagerSpec extends Specification {
         mgr.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
 
         when:
-        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input_data": data, "input_metadata": meta])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input_data": data, "input_metadata": meta], null)
         jobStatus = waitTillResultsReady(mgr, jobStatus)
         def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
 
@@ -228,7 +228,7 @@ class JobManagerSpec extends Specification {
         mgr.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
 
         when:
-        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": sdf])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": sdf], null)
         jobStatus = waitTillResultsReady(mgr, jobStatus)
         def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
 

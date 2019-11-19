@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,11 +62,12 @@ class DatasetMergerStepSpec extends Specification {
         DatasetMergerStep step = new DatasetMergerStep()
         step.configure("merge 2 datasets keep first",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
-                DatasetMergerStep.SERVICE_DESCRIPTOR
+                DatasetMergerStep.SERVICE_DESCRIPTOR,
+                context, null
         )
         
         when:
-        def resultsMap = step.doExecute([input1: ds1, input2: ds2], context)
+        def resultsMap = step.doExecute([input1: ds1, input2: ds2])
         def result = resultsMap["output"]
 
         then:
@@ -88,10 +89,10 @@ class DatasetMergerStepSpec extends Specification {
         DatasetMergerStep step = new DatasetMergerStep()
         step.configure("merge 2 datasets keep last",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id', (DatasetMergerStep.OPTION_KEEP_FIRST):false],
-                DatasetMergerStep.SERVICE_DESCRIPTOR)
+                DatasetMergerStep.SERVICE_DESCRIPTOR, context, null)
         
         when:
-        def resultsMap = step.doExecute([input1: ds1, input2: ds2], context)
+        def resultsMap = step.doExecute([input1: ds1, input2: ds2])
         def result = resultsMap["output"]
 
         then:
@@ -115,10 +116,10 @@ class DatasetMergerStepSpec extends Specification {
         DatasetMergerStep step = new DatasetMergerStep()
         step.configure("merge 3 datasets",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
-                DatasetMergerStep.SERVICE_DESCRIPTOR)
+                DatasetMergerStep.SERVICE_DESCRIPTOR, context, null)
         
         when:
-        def resultsMap = step.doExecute([input1: ds1, input2: ds2, input3: ds3], context)
+        def resultsMap = step.doExecute([input1: ds1, input2: ds2, input3: ds3])
         def result = resultsMap["output"]
 
         then:

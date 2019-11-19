@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,10 @@ class SDFReaderStepSpec extends Specification {
         String myFileName = "Kinase_inhibs.sdf.gz"
         FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
         SquonkDataSource input = new InputStreamDataSource("sdf", myFileName, CommonMimeTypes.MIME_TYPE_MDL_SDF, is, true)
-        step.configure("test read sdf", [:], SDFReaderStep.SERVICE_DESCRIPTOR)
+        step.configure("test read sdf", [:], SDFReaderStep.SERVICE_DESCRIPTOR, null, null)
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:

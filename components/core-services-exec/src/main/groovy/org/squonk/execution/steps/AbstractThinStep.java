@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.squonk.dataset.DatasetUtils;
 import org.squonk.dataset.ThinDatasetWrapper;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.io.IODescriptor;
+import org.squonk.types.BasicObject;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -85,9 +86,7 @@ public abstract class AbstractThinStep extends AbstractStep {
 
 
     @Override
-    protected Map<String,Object> prepareInputs(
-            Map<String,Object> inputs,
-            CamelContext camelContext) throws Exception {
+    protected Map<String,Object> prepareInputs(Map<String,Object> inputs) throws Exception {
 
         if (!enableThinExecution) {
             return inputs;
@@ -168,7 +167,7 @@ public abstract class AbstractThinStep extends AbstractStep {
 
     @Override
     @SuppressWarnings("unchecked")
-        protected Map<String,Object> prepareOutputs(Map<String,Object> outputs, CamelContext camelContext) throws Exception {
+        protected Map<String,Object> prepareOutputs(Map<String,Object> outputs) throws Exception {
 
         if (!enableThinExecution) {
             return outputs;

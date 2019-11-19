@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.squonk.execution;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
@@ -63,6 +64,8 @@ public class ExecutableJob {
 
     protected String jobId;
     protected Map<String, Object> options;
+    protected CamelContext camelContext;
+    protected String auth;
 
     protected IODescriptor[] inputs;
     protected IODescriptor[] outputs;
@@ -159,7 +162,7 @@ public class ExecutableJob {
             if (type.isAssignableFrom(val.getClass())) {
                 return (T) val;
             } else {
-                LOG.info("Unexpected option type. Trying to convert from " + val.getClass().getName() + " to " + type.getName());
+                LOG.info("Unexpected option type for " + name + ". Trying to convert from " + val.getClass().getName() + " to " + type.getName());
                 return converter.convertTo(type, val);
             }
         }

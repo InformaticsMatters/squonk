@@ -363,17 +363,19 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     JobDefinition jobdef = JsonHandler.getInstance().objectFromJson(json, JobDefinition.class);
                     LOG.info("Received request to submit job for " + jobdef);
                     Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
+                    String auth = exch.getIn().getHeader(HEADER_AUTH, String.class);
+                    LOG.info(auth == null ? "No Authorization header" : "Authorization header present");
                     if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
-                        ExecuteCellUsingStepsJobDefinition stepsJopbDef = (ExecuteCellUsingStepsJobDefinition) jobdef;
-                        Job job = new StepsCellJob(jobstatusClient, stepsJopbDef);
-                        LOG.info("Starting Job");
+                        ExecuteCellUsingStepsJobDefinition stepsJopDef = (ExecuteCellUsingStepsJobDefinition) jobdef;
+                        Job job = new StepsCellJob(jobstatusClient, stepsJopDef, auth);
+                        LOG.fine("Starting Job " + job.getJobId());
                         JobStatus result = job.start(exch.getContext(), Utils.fetchUsername(exch), count);
                         LOG.info("Job " + result.getJobId() + " started");
                         String jsonResult = JsonHandler.getInstance().objectToJson(result);
                         exch.getIn().setBody(jsonResult);
                     } else if (jobdef instanceof ExternalJobDefinition) {
                         ExternalJobDefinition externalJob = (ExternalJobDefinition) jobdef;
-                        LOG.info("Creating job with ID " + externalJob.getJobId());
+                        LOG.fine("Creating job with ID " + externalJob.getJobId());
                         JobStatus result = jobstatusClient.create(externalJob, Utils.fetchUsername(exch), count);
                         LOG.fine("Job " + result.getJobId() + " created");
                         String jsonResult = JsonHandler.getInstance().objectToJson(result);

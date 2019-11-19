@@ -5,7 +5,7 @@ services:
    ################# keycloak container ###############################################
     # available on http://${PUBLIC_HOST}/auth
     keycloak:
-        image: jboss/keycloak-postgres:2.1.0.Final
+        image: jboss/keycloak:4.8.3.Final
         restart: on-failure:10
         depends_on:
             postgres:
@@ -13,11 +13,14 @@ services:
         expose:
         - "8443"
         environment:
+            DB_VENDOR: postgres
+            POSTGRES_DATABASE: keycloak
+            POSTGRES_USER: keycloak
             POSTGRES_PASSWORD: $POSTGRES_KEYCLOAK_PASSWORD
             KEYCLOAK_USER:
             KEYCLOAK_PASSWORD:
-        volumes:
-        - ./images/keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro,Z
+            PROXY_ADDRESS_FORWARDING: 'true'
+            KEYCLOAK_LOGLEVEL: ${KEYCLOAK_LOGLEVEL:-INFO}
         networks:
         - squonk_front
         - squonk_back

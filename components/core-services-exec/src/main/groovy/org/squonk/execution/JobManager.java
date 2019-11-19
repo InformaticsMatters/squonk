@@ -191,9 +191,10 @@ public class JobManager implements ExecutorCallback {
             String username,
             String serviceId,
             Map<String,Object> options,
-            Map<String, DataSource> inputs) throws Exception {
+            Map<String, DataSource> inputs,
+            String auth) throws Exception {
 
-        return execute(username, serviceId, options, inputs, true);
+        return execute(username, serviceId, options, inputs, true, auth);
     }
 
     private JobStatus execute(
@@ -201,7 +202,8 @@ public class JobManager implements ExecutorCallback {
             String serviceId,
             Map<String, Object> options,
             Map<String, DataSource> inputs,
-            boolean async) throws Exception {
+            boolean async,
+            String auth) throws Exception {
 
         if (inputs == null) {
             LOG.info("Executing with no inputs");
@@ -223,7 +225,7 @@ public class JobManager implements ExecutorCallback {
         Map<String,Object> data = createObjectsFromDataSources(inputs, serviceDescriptor.resolveInputIODescriptors());
         LOG.info("Handling " + data.size() + " inputs");
 
-        ExternalExecutor executor = new ExternalExecutor(jobDefinition, data, options, serviceDescriptor, camelContext, this);
+        ExternalExecutor executor = new ExternalExecutor(jobDefinition, data, options, serviceDescriptor, camelContext, auth, this);
         LOG.fine("Executor job ID is " + executor.getJobId());
         JobStatus jobStatus = createJob(jobDefinition, username, 0);
         ExecutionData executionData = new ExecutionData();

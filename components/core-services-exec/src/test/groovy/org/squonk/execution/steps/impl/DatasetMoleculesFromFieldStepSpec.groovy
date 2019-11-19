@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import spock.lang.Specification
  */
 class DatasetMoleculesFromFieldStepSpec extends Specification {
 
+    def context = new DefaultCamelContext()
 
     def createDataset() {
         def bos = []
@@ -52,18 +53,17 @@ class DatasetMoleculesFromFieldStepSpec extends Specification {
         DatasetMoleculesFromFieldStep step = new DatasetMoleculesFromFieldStep()
         step.configure(jobId,
                 [(DatasetMoleculesFromFieldStep.OPTION_MOLECULES_FIELD): field],
-                DatasetMoleculesFromFieldStep.SERVICE_DESCRIPTOR)
+                DatasetMoleculesFromFieldStep.SERVICE_DESCRIPTOR, context, null)
         return step
     }
 
     void "get 25 mols"() {
 
-        def context = new DefaultCamelContext()
         def step = createStep("mols", "get 25 mols")
         def input = createDataset()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.types.io.JsonHandler;
@@ -46,12 +45,11 @@ public class OutOnlyDatasetExecutorStep extends AbstractDatasetStep {
     /**
      *
      * @param input The parameter is expected to be null and is ignored
-     * @param camelContext
      * @return
      * @throws Exception
      */
     @Override
-    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
+    protected Dataset doExecuteWithDataset(Dataset input) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
 
         String endpoint = getHttpExecutionEndpoint();
@@ -69,7 +67,7 @@ public class OutOnlyDatasetExecutorStep extends AbstractDatasetStep {
         }
         LOG.info("Input: " + query);
 
-        Dataset results = handleHttpPost(camelContext, endpoint, new ByteArrayInputStream(query.getBytes()), Collections.emptyMap());
+        Dataset results = handleHttpPost(camelContext, endpoint, new ByteArrayInputStream(query.getBytes()));
         return results;
     }
 

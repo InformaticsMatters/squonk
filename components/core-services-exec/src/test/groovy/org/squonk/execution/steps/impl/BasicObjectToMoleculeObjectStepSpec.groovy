@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,11 +39,12 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
         step.configure("simple convert",
                 [(BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME): 'struct',
-                (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FORMAT): 'smiles'],
-                BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR)
+                 (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FORMAT)    : 'smiles'],
+                BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR,
+                null, null)
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds))
         def molsds = resultsMap["output"]
 
         then:
@@ -59,14 +60,14 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
     void "uuid and format props"() {
 
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
-        step.configure( "uuid and format props", [
+        step.configure("uuid and format props", [
                 (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME): 'struct',
                 (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FORMAT)    : 'smiles',
                 (BasicObjectToMoleculeObjectStep.OPTION_PRESERVE_UUID)       : false
-        ],BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR)
+        ], BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR, null, null)
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds))
         def molsds = resultsMap["output"]
 
         then:

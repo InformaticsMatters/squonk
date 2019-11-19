@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
@@ -66,14 +65,13 @@ public class DatasetSelectRandomStep<P extends BasicObject> extends AbstractData
      * on random based on a random probability (random option, default 0.001) of selection.
      *
      * @param input
-     * @param context
      * @return
      * @throws Exception
      */
     @Override
-    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
-        TypeConverter converter = findTypeConverter(context);
+        TypeConverter converter = findTypeConverter();
         Float randomOpt = getOption(OPTION_RANDOM, Float.class, converter);
         Integer countOpt = getOption(OPTION_COUNT, Integer.class, converter);
         float random = randomOpt == null ? 0.001f : randomOpt;

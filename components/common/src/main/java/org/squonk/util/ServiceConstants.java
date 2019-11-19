@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package org.squonk.util;
 
-import org.squonk.util.StatsRecorder;
-
 /**
  *
  * @author timbo
@@ -32,6 +30,7 @@ public interface ServiceConstants {
     String HEADER_JOB_PROCESSED_COUNT = "ProcessedCount";
     String HEADER_JOB_ERROR_COUNT = "ErrorCount";
     String HEADER_JOB_STATUS = "Status";
+    String HEADER_AUTH = "Authorization";
 
     String KEY_SERVICE_REGISTRY = "KEY_SERVICE_REGISTRY";
 

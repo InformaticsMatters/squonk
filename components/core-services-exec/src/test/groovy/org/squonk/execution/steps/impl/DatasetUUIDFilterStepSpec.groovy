@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,13 +43,14 @@ class DatasetUUIDFilterStepSpec extends Specification {
         DatasetUUIDFilterStep step = new DatasetUUIDFilterStep()
         step.configure("simple filter step",
                 [(DatasetUUIDFilterStep.OPTION_UUIDS): uuids],
-                DatasetUUIDFilterStep.SERVICE_DESCRIPTOR
+                DatasetUUIDFilterStep.SERVICE_DESCRIPTOR,
+                null, null
         )
         Dataset ds = new Dataset(BasicObject.class, input)
         ds.generateMetadata()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds))
         def output = resultsMap["output"]
 
         then:

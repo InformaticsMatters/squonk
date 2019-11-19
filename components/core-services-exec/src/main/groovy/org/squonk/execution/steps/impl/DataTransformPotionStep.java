@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.camel.processor.ValueTransformerProcessor;
 import org.squonk.dataset.Dataset;
@@ -51,12 +50,11 @@ public class DataTransformPotionStep<P extends BasicObject> extends AbstractData
      * field named FIELD_OUTPUT_DATASET.
      *
      * @param input
-     * @param context
      * @throws Exception
      */
-    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
-        TypeConverter converter = findTypeConverter(context);
+        TypeConverter converter = findTypeConverter();
         String potion = getOption(OPTION_POTION, String.class, converter);
         if (potion == null) {
             throw new IllegalStateException("Potion must be defined as option named " + OPTION_POTION);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import static org.squonk.mqueue.MessageQueueCredentials.*;
 
 
 /** Consumes a steps job from the message queue and executes it, updating the status of the job accordingly.
+ *
  * Created by timbo on 07/01/16.
  */
 public class CellExecutorRouteBuilder extends RouteBuilder {
@@ -96,8 +97,10 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         dumpHeaders(exch);
         StepsCellExecutorJobDefinition jobdef = exch.getIn().getBody(StepsCellExecutorJobDefinition.class);
         String jobid = exch.getIn().getHeader(StatsRecorder.HEADER_SQUONK_JOB_ID, String.class);
-        String username = exch.getIn().getHeader("SquonkUsername", String.class);
-        executeJob(exch.getContext(), jobdef, jobid, username);
+        String username = exch.getIn().getHeader(ServiceConstants.HEADER_SQUONK_USERNAME, String.class);
+        String auth = exch.getIn().getHeader(ServiceConstants.HEADER_AUTH, String.class);
+
+        executeJob(exch.getContext(), jobdef, jobid, username, auth);
     }
 
     void dumpHeaders(Exchange exch) {
@@ -108,7 +111,8 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         LOG.info(b.toString());
     }
 
-    void executeJob(CamelContext camelContext, StepsCellExecutorJobDefinition jobdef, String jobid, String username) throws IOException {
+    void executeJob(CamelContext camelContext, StepsCellExecutorJobDefinition jobdef, String jobid, String username, String auth)
+            throws IOException {
 
         LOG.info("Executing Job: id:" + jobid + " username:" + username);
 
@@ -152,7 +156,7 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         // and execute
         try {
             LOG.fine("Executing job " + jobid + " for user " + username);
-            executor.execute(camelContext);
+            executor.execute(camelContext, auth);
             List<Step> executedSteps = executor.getExecutedSteps();
             String statusMessage = null;
             int numProcessed = 0;

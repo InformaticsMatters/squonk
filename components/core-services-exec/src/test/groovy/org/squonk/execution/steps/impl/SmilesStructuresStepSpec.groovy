@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ class SmilesStructuresStepSpec extends Specification {
         SmilesStructuresStep step = new SmilesStructuresStep()
         step.configure("read smiles",
                 [(SmilesStructuresStep.OPTION_SMILES): text],
-                SmilesStructuresStep.SERVICE_DESCRIPTOR)
+                SmilesStructuresStep.SERVICE_DESCRIPTOR, null, null)
 
         when:
-        def resultsMap = step.doExecute(null, null)
+        def resultsMap = step.doExecute(null)
         def result = resultsMap["output"]
 
         then:
@@ -49,10 +49,10 @@ class SmilesStructuresStepSpec extends Specification {
         SmilesStructuresStep step = new SmilesStructuresStep()
         step.configure("read smiles with names",
                 [(SmilesStructuresStep.OPTION_SMILES): text],
-                SmilesStructuresStep.SERVICE_DESCRIPTOR)
+                SmilesStructuresStep.SERVICE_DESCRIPTOR, null, null)
 
         when:
-        def resultsMap = step.execute(null, null)
+        def resultsMap = step.execute(null,)
         def result = resultsMap["output"]
 
         then:

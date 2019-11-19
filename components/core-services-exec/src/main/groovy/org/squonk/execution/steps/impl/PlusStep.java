@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.squonk.execution.steps.AbstractStep;
-import org.squonk.execution.variable.VariableManager;
 
 import java.util.Collections;
 import java.util.Map;
@@ -33,7 +31,7 @@ public class PlusStep extends AbstractStep {
     private static final Logger LOG = Logger.getLogger(PlusStep.class.getName());
 
     @Override
-    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs) throws Exception {
         int toAdd = getOption("add", Integer.class, 0);
         Integer value = (Integer)inputs.get("input");
         int result = value + toAdd;

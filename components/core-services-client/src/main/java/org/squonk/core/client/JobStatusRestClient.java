@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
      * further monitor and handle the job.
      * @throws java.io.IOException
      */
-    public JobStatus submit(CellExecutorJobDefinition jobDef, String username, Integer totalCount) throws IOException {
+    public JobStatus submit(CellExecutorJobDefinition jobDef, String username, String accessToken, Integer totalCount) throws IOException {
         if (jobDef == null) {
             throw new IllegalStateException("Job definition must be specified");
         }
@@ -73,7 +73,19 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
             b = b.setParameter(ServiceConstants.HEADER_JOB_SIZE, totalCount.toString());
         }
         LOG.info("About to post job of " + json);
-        InputStream result = executePostAsInputStream( b, json, new BasicNameValuePair(ServiceConstants.HEADER_SQUONK_USERNAME, username));
+
+        BasicNameValuePair[] headers;
+        if (accessToken == null || accessToken.isEmpty()) {
+            headers = new BasicNameValuePair[] {new BasicNameValuePair(ServiceConstants.HEADER_SQUONK_USERNAME, username)};
+        } else {
+            headers = new BasicNameValuePair[] {
+                    new BasicNameValuePair(ServiceConstants.HEADER_SQUONK_USERNAME, username),
+                    new BasicNameValuePair("Authorization", accessToken)
+            };
+        }
+        LOG.info("Adding " + headers.length + " headers");
+
+        InputStream result = executePostAsInputStream( b, json, headers);
         return fromJson(result, JobStatus.class);
     }
 

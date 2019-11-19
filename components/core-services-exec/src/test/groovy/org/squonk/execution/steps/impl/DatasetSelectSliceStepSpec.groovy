@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import spock.lang.Specification
  */
 class DatasetSelectSliceStepSpec extends Specification {
 
+    DefaultCamelContext context = new DefaultCamelContext()
+
     def createDataset() {
         def mols = []
         for (i in 1..100) {
@@ -42,18 +44,17 @@ class DatasetSelectSliceStepSpec extends Specification {
         def opts = [:]
         if (skip != null) opts[DatasetSelectSliceStep.OPTION_SKIP] = skip
         if (count != null) opts[DatasetSelectSliceStep.OPTION_COUNT] = count
-        step.configure(jobId, opts, DatasetSelectSliceStep.SERVICE_DESCRIPTOR)
+        step.configure(jobId, opts, DatasetSelectSliceStep.SERVICE_DESCRIPTOR, context, null)
         return step
     }
     
     void "test skip and count"() {
-        
-        DefaultCamelContext context = new DefaultCamelContext()
+
         DatasetSelectSliceStep step = createStep(10, 10, "test skip and count")
         Dataset input = createDataset()
         
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
         
         then:
@@ -66,12 +67,11 @@ class DatasetSelectSliceStepSpec extends Specification {
 
     void "test skip only"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
         DatasetSelectSliceStep step = createStep(10, null, "test skip only")
         Dataset input = createDataset()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:
@@ -84,12 +84,11 @@ class DatasetSelectSliceStepSpec extends Specification {
 
     void "test count only"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
         DatasetSelectSliceStep step = createStep(null, 10, "test count only")
         Dataset input = createDataset()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:

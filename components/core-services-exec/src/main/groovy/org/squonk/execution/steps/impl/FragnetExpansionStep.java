@@ -31,6 +31,7 @@ import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
+import org.squonk.util.ServiceConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,14 +95,14 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
      * @throws Exception
      */
     @Override
-    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<MoleculeObject> input, CamelContext context) throws Exception {
+    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<MoleculeObject> input) throws Exception {
 
         if (!isServiceRunning()) {
             throw new IllegalStateException("Fragnet Search service is not responding");
         }
 
-        TypeConverter converter = findTypeConverter(context);
-        Integer hops = new Integer(getOption(OPTION_HOPS, Integer.class, converter, 0));
+        TypeConverter converter = findTypeConverter();
+        Integer hops = Integer.valueOf(getOption(OPTION_HOPS, String.class, converter, "0"));
         Integer hac = getOption(OPTION_HAC, Integer.class, converter);
         Integer rac = getOption(OPTION_RAC, Integer.class, converter);
 
@@ -112,7 +113,7 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
         for (MoleculeObject mo : input.getItems()) {
             LOG.info("Processing mol " + count);
             statusMessage = "Processing mol " + count;
-            List<MoleculeObject> mols = expandMolecule(mo, hops, hac, rac);
+            List<MoleculeObject> mols = expandMolecule(mo, hops, hac, rac, auth);
             for (MoleculeObject result : mols) {
                 MoleculeObject existing = all.get(result.getSource());
                 if (existing == null) {
@@ -185,16 +186,16 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
      * @return
      * @throws IOException
      */
-    protected List<MoleculeObject> expandMolecule(MoleculeObject mol, int hops, int hac, int rac) throws IOException {
+    protected List<MoleculeObject> expandMolecule(MoleculeObject mol, int hops, int hac, int rac, String auth) throws IOException {
 
         LOG.fine("Expanding molecule " + mol);
 
         String format = mol.getFormat();
 
         if (MoleculeObject.FORMAT_SMILES.equals(format)) {
-            return doGet(mol, hops, hac, rac);
+            return doGet(mol, hops, hac, rac, auth);
         } else if (MoleculeObject.FORMAT_MOLFILE.equals(format)) {
-            return doPost(mol, CommonMimeTypes.MIME_TYPE_MDL_MOLFILE, hops, hac, rac);
+            return doPost(mol, CommonMimeTypes.MIME_TYPE_MDL_MOLFILE, hops, hac, rac, auth);
         } else {
             throw new IllegalArgumentException("Can't handle format " + mol.getFormat());
         }
@@ -210,7 +211,7 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
      * @return
      * @throws IOException
      */
-    private List<MoleculeObject> doGet(MoleculeObject srcMol, int hops, int hac, int rac) throws IOException {
+    private List<MoleculeObject> doGet(MoleculeObject srcMol, int hops, int hac, int rac, String auth) throws IOException {
 
         if (!srcMol.getFormat().equals("smiles")) {
             throw new IllegalArgumentException("Not in SMILES format");
@@ -223,6 +224,10 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("Accept", "application/json");
+        if (auth != null) {
+            LOG.info("Setting Authorization header");
+            con.setRequestProperty(ServiceConstants.HEADER_AUTH, auth);
+        }
 
         int status = con.getResponseCode();
         LOG.fine("Response code: " + status);
@@ -250,7 +255,7 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
      * @return
      * @throws IOException
      */
-    private List<MoleculeObject> doPost(MoleculeObject srcMol, String mimeType, int hops, int hac, int rac) throws IOException {
+    private List<MoleculeObject> doPost(MoleculeObject srcMol, String mimeType, int hops, int hac, int rac, String auth) throws IOException {
         String query = buildQueryPart(hops, hac, rac);
         URL url = new URL(BASE_URL + query);
 
@@ -259,6 +264,10 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", mimeType);
         con.setRequestProperty("Accept", "application/json");
+        if (auth != null) {
+            LOG.info("Setting Authorization header");
+            con.setRequestProperty(ServiceConstants.HEADER_AUTH, auth);
+        }
         con.setDoOutput(true);
         try (OutputStream os = con.getOutputStream()) {
             byte[] input = srcMol.getSource().getBytes("utf-8");
@@ -346,7 +355,7 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
         FragnetExpansionStep step = new FragnetExpansionStep();
 
         MoleculeObject mol = new MoleculeObject("c1ccc(Nc2nc3ccccc3o2)cc1", "smiles");
-        List<MoleculeObject> mols = step.doGet(mol, 1, 3, 1);
+        List<MoleculeObject> mols = step.doGet(mol, 1, 3, 1, null);
 
 //        MoleculeObject mol = new MoleculeObject("\n" +
 //                "  Mrv1729 11011916322D          \n" +

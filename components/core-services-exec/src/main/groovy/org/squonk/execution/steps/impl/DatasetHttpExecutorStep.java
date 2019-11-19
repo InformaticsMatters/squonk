@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetHttpExecutorStep extends AbstractDatasetStep {
+public class DatasetHttpExecutorStep<P extends BasicObject, Q extends BasicObject> extends AbstractDatasetStep<P,Q> {
 
     private static final Logger LOG = Logger.getLogger(DatasetHttpExecutorStep.class.getName());
 
@@ -53,17 +53,22 @@ public class DatasetHttpExecutorStep extends AbstractDatasetStep {
     }
 
     @Override
-    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
+    protected void addRequestHeaders(Map<String, Object> requestHeaders) {
 
-        String endpoint = getHttpExecutionEndpoint();
+        super.addRequestHeaders(requestHeaders);
 
-        Map<String, Object> requestHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
         // NOTE: setting the Content-Encoding will cause camel to gzip the data, we don't need to do it
         requestHeaders.put("Content-Encoding", "gzip");
         if (jobId != null) {
             requestHeaders.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobId);
         }
+    }
+
+    @Override
+    protected Dataset doExecuteWithDataset(Dataset input) throws Exception {
+
+        String endpoint = getHttpExecutionEndpoint();
 
         Stream<? extends BasicObject> stream1 = input.getStream();
         final AtomicInteger count = new AtomicInteger(0);
@@ -75,7 +80,7 @@ public class DatasetHttpExecutorStep extends AbstractDatasetStep {
 
         InputStream data = JsonHandler.getInstance().marshalStreamToJsonArray(stream1, false);
 
-        Dataset<? extends BasicObject> results = handleHttpPost(camelContext, endpoint, data, requestHeaders);
+        Dataset<? extends BasicObject> results = handleHttpPost(camelContext, endpoint, data);
         return results;
     }
 }

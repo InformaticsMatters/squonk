@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,11 +42,13 @@ class DatasetSorterStepSpec extends Specification {
     }
 
 
-    def createStep(expression, jobId) {
+    def createStep(expression, jobId, camelContext) {
         DatasetSorterStep step = new DatasetSorterStep()
         step.configure(jobId,
                 [(DatasetSorterStep.OPTION_DIRECTIVES): expression],
-                DatasetSorterStep.SERVICE_DESCRIPTOR
+                DatasetSorterStep.SERVICE_DESCRIPTOR,
+                camelContext,
+                null
         )
         return step
     }
@@ -129,10 +131,10 @@ class DatasetSorterStepSpec extends Specification {
     void "sort tests"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
-        DatasetSorterStep step = createStep(expression, "sort tests")
+        DatasetSorterStep step = createStep(expression, "sort tests", context)
         Dataset input = createDataset()
 
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def result = resultsMap["output"]
 
         expect:
