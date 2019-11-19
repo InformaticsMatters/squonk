@@ -76,7 +76,7 @@ oc_cell_work_pvc_size: 10Gi
 
 oc_squonk_db: squonk
 oc_squonk_user: squonk
-oc_squonk_user_password: "{{ ansible_env.IM_SQUONK_DB_PASS|default(lookup('password', '/tmp/passwordfile length=10 chars=ascii_letters'), true) }}"
+oc_squonk_user_password: "{{ ansible_env.IM_SQUONK_DB_PASS|default(lookup('password', '/dev/null length=12 chars=ascii_letters'), true) }}"
 
 # The Squonk OpenShift image pull policy.
 # One, typically, of "IfNotPresent" or "Always"
