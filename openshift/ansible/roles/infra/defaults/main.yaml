@@ -84,8 +84,8 @@ oc_keycloak_deploy: yes
 
 # Keycloak admin username and password
 oc_keycloak_user: admin
-oc_keycloak_password: "{{ ansible_env.IM_INFRA_KEYCLOAK_ADMIN_PASSWORD | default('blob1234', true) }}"
-oc_keycloak_manager_password: "{{ ansible_env.IM_INFRA_KEYCLOAK_MANAGER_PASSWORD | default('blob1234', true) }}"
+oc_keycloak_password: "{{ ansible_env.IM_INFRA_KEYCLOAK_ADMIN_PASSWORD|default(lookup('password', '/tmp/passwordfile length=10 chars=ascii_letters'), true) }}"
+oc_keycloak_manager_password: "{{ ansible_env.IM_INFRA_KEYCLOAK_MANAGER_PASSWORD|default(lookup('password', '/tmp/passwordfile length=10 chars=ascii_letters'), true) }}"
 
 # Keycloak default roles.
 # A list of roles that need to be added to Keycloak.
@@ -95,11 +95,11 @@ oc_keycloak_default_roles:
 
 # Postgres admin and password
 oc_db_admin_user: postgres
-oc_db_admin_password: "{{ ansible_env.IM_INFRA_DB_ADMIN_PASSWORD | default('blob1234', true) }}"
+oc_db_admin_password: "{{ ansible_env.IM_INFRA_DB_ADMIN_PASSWORD|default(lookup('password', '/tmp/passwordfile length=10 chars=ascii_letters'), true) }}"
 # The sso database, user and password
 oc_db_sso_db: sso
-oc_db_sso_db_user: "{{ ansible_env.IM_INFRA_KEYCLOAK_DB_USER | default('blob1234', true) }}"
-oc_db_sso_db_password: "{{ ansible_env.IM_INFRA_KEYCLOAK_DB_PASSWORD | default('blob1234', true) }}"
+oc_db_sso_db_user: "{{ ansible_env.IM_INFRA_KEYCLOAK_DB_USER|default(lookup('password', '/tmp/passwordfile length=10 chars=ascii_letters'), true) }}"
+oc_db_sso_db_password: "{{ ansible_env.IM_INFRA_KEYCLOAK_DB_PASSWORD|default(lookup('password', '/tmp/passwordfile length=10 chars=ascii_letters'), true) }}"
 
 # Default values for variables used when creating
 # new database for projects. The following  (not defined here)
