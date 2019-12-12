@@ -127,6 +127,9 @@ public class KeycloakUserDetailsManager extends DefaultUserDetailsManager {
 
     public String getAuthorizationHeader(HttpServletRequest request) {
         KeycloakSecurityContext session = (KeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
+        if (session == null) {
+            return null;
+        }
         String token = session.getTokenString();
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Authorization header: " + token);

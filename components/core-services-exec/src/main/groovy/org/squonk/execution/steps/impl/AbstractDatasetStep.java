@@ -27,6 +27,7 @@ import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.ServiceConstants;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,16 +101,48 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
         }
     }
 
-    protected Dataset handleHttpPost(CamelContext camelContext, String endpoint, InputStream data)  throws Exception{
+    protected Dataset<? extends BasicObject> handleHttpGet(CamelContext camelContext, String endpoint)  throws Exception {
+        return handleHttpRequestForDataset(camelContext, endpoint, "GET", null);
+    }
+
+    protected Dataset<? extends BasicObject> handleHttpPost(CamelContext camelContext, String endpoint, InputStream data)  throws Exception {
+        return handleHttpRequestForDataset(camelContext, endpoint, "POST", data);
+    }
+
+
+    protected Dataset<? extends BasicObject> handleHttpRequestForDataset(
+            CamelContext camelContext,
+            String endpoint,
+            String method,
+            InputStream data) throws Exception {
+
+        Map<String, Object> responseHeaders = new HashMap<>();
+        InputStream resultsStream = handleHttpRequestForInputStream(camelContext, endpoint, method, data, responseHeaders);
+
+        updateStatus("Handling results ...");
+
+        Dataset<? extends BasicObject> results = readDatasetFromResponse(resultsStream, responseHeaders);
+        addResultsCounter(results);
+
+        return results;
+    }
+
+
+    protected InputStream handleHttpRequestForInputStream(
+            CamelContext camelContext,
+            String endpoint,
+            String method,
+            InputStream data,
+            Map<String, Object> responseHeaders) throws Exception {
 
         Map<String, Object> requestHeaders = new HashMap<>();
         addRequestHeaders(requestHeaders);
 
         // send for execution
-        updateStatus("Posting request ...");
-        Map<String, Object> responseHeaders = new HashMap<>();
-        InputStream resultsStream = CamelUtils.doRequestUsingHeadersAndQueryParams(camelContext, "POST", endpoint, data, requestHeaders, responseHeaders, options);
-        updateStatus("Handling results ...");
+        updateStatus(method + " request ...");
+
+        InputStream resultsStream = CamelUtils.doRequestUsingHeadersAndQueryParams(
+                camelContext, method, endpoint, data, requestHeaders, responseHeaders, options);
 
 //        // start debug output
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(resultsStream), 1000);
@@ -117,6 +150,12 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
 //        resultsStream = new ByteArrayInputStream(data.getBytes());
 //        // end debug output
 
+        return resultsStream;
+    }
+
+
+
+    protected Dataset readDatasetFromResponse(InputStream resultsStream, Map<String, Object> responseHeaders) throws IOException {
         String responseMetadataJson = (String)responseHeaders.get(CamelCommonConstants.HEADER_METADATA);
         DatasetMetadata<? extends BasicObject> responseMetadata;
         if (responseMetadataJson == null || "null".equals(responseMetadataJson)) {
@@ -132,7 +171,6 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
                 updateStatus("Processing complete");
             }
         }
-
 
         Dataset<? extends BasicObject> results = new Dataset(resultsStream, responseMetadata);
         addResultsCounter(results);

@@ -223,25 +223,14 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
         LOG.fine("GET: " + url.toString());
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
-        con.setRequestProperty("Accept", "application/json");
+        con.setRequestProperty("Accept", CommonMimeTypes.MIME_TYPE_JSON);
         if (auth != null) {
             LOG.info("Setting Authorization header");
             con.setRequestProperty(ServiceConstants.HEADER_AUTH, auth);
         }
 
-        int status = con.getResponseCode();
-        LOG.fine("Response code: " + status);
-        if (status >= 200 && status < 300) {
-            List<MoleculeObject> mols = readResponse(con.getInputStream(), srcMol);
-            return mols;
-        } if (status == 404) {
-            // mol not found
-            LOG.info("No molecules found");
-            return Collections.emptyList();
-        } else {
-            String msg = IOUtils.convertStreamToString(con.getInputStream());
-            throw new IOException("Bad response: " + statusMessage + " " + msg);
-        }
+        List<MoleculeObject> mols = readMoleculeObjects(con, srcMol);
+        return mols;
     }
 
     /**
@@ -256,6 +245,10 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
      * @throws IOException
      */
     private List<MoleculeObject> doPost(MoleculeObject srcMol, String mimeType, int hops, int hac, int rac, String auth) throws IOException {
+
+        // NOTE: there is support in the superclass for HTTP GET/POST operations but for now
+        // we roll our own as the handling of the mime type and the response is not straight forward
+
         String query = buildQueryPart(hops, hac, rac);
         URL url = new URL(BASE_URL + query);
 
@@ -263,7 +256,7 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", mimeType);
-        con.setRequestProperty("Accept", "application/json");
+        con.setRequestProperty("Accept", CommonMimeTypes.MIME_TYPE_JSON);
         if (auth != null) {
             LOG.info("Setting Authorization header");
             con.setRequestProperty(ServiceConstants.HEADER_AUTH, auth);
@@ -274,6 +267,11 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
             os.write(input, 0, input.length);
         }
 
+        List<MoleculeObject> mols = readMoleculeObjects(con, srcMol);
+        return mols;
+    }
+
+    protected List<MoleculeObject> readMoleculeObjects(HttpURLConnection con, MoleculeObject srcMol) throws IOException {
         int status = con.getResponseCode();
         LOG.fine("Response code: " + status);
         if (status >= 200 && status < 300) {
@@ -287,8 +285,8 @@ public class FragnetExpansionStep extends AbstractDatasetStep<MoleculeObject, Mo
             String msg = IOUtils.convertStreamToString(con.getInputStream());
             throw new IOException("Bad response: " + statusMessage + " " + msg);
         }
-
     }
+
 
     private String buildQueryPart(int hops, int hac, int rac) {
         return "?hops=" + hops + "&hac=" + hac + "&rac=" + rac;
