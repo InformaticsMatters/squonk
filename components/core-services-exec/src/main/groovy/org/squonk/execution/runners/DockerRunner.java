@@ -206,14 +206,12 @@ public class DockerRunner extends AbstractRunner {
                 .withVolumes(volumes.toArray(new Volume[volumes.size()]))
                 .withBinds(binds.toArray(new Bind[binds.size()]))
                 .withWorkingDir(localWorkDir)
-                .withNetworkMode(networkName == null ? "none" : networkName)
-                .withCmd(cmd);
+                .withNetworkMode(networkName == null ? "none" : networkName);
 
         CreateContainerResponse container = createContainerCmd.exec();
         containerId = container.getId();
         LOG.info("Created container " + containerId);
-
-        LOG.info("Executing command: " + Arrays.deepToString(cmd));
+        LOG.info("Executing container");
         dockerClient.startContainerCmd(containerId).exec();
 
         loggingCallback = new LogContainerTestCallback(true);
