@@ -5,9 +5,12 @@ services:
     cellexecutor:
         environment:
             FRAGNET_SEARCH_BASE_URL: "http://fragnet-services:8080/fragnet-search"
+            #FRAGNET_SEARCH_BASE_URL: "https://fragnet.informaticsmatters.com/fragnet-search"
 
     fragnet-services:
         image: squonk/fragnet-services:latest
+        volumes:
+            - ./images/fragnet-search/keycloak.json:/usr/local/tomcat/webapps/fragnet-search/WEB-INF/keycloak.json:ro,Z
         environment:
             NEO4J_PASSWORD:
             NEO4J_SERVER:
