@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetNextflowInDockerExecutorStep.class.getName());
-    private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow:19.01.0");
+    private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow:19.10.0");
 
     public Map<String, List<SquonkDataSource>> executeForDataSources(Map<String, Object> inputs, CamelContext context) throws Exception {
 
