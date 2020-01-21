@@ -43,8 +43,8 @@ public class SquonkServerConfig {
         if (squonkDataSource == null) {
             String s = SQUONK_DB_SERVER;
             String po = "5432";
-            String d = "squonk";
-            String u = "squonk";
+            String d = IOUtils.getConfiguration("POSTGRES_SQUONK_DATABASE", "squonk");
+            String u = IOUtils.getConfiguration("POSTGRES_SQUONK_USER", "squonk");
             String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASSWORD", "squonk");
 
             squonkDataSource = createDataSource(s, new Integer(po), u, pw, d);

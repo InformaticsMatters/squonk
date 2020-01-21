@@ -4,6 +4,10 @@ set -e
 
 echo "Upgrading squonk database at ${POSTGRES_HOSTNAME:-postgres}"
 
-./flyway -password=$POSTGRES_PASSWORD -url="jdbc:postgresql://${POSTGRES_HOSTNAME:-postgres}/squonk" migrate
+./flyway \
+  -user=${POSTGRES_USER:-squonk} \
+  -password=$POSTGRES_PASSWORD \
+  -url="jdbc:postgresql://${POSTGRES_HOSTNAME:-postgres}/${POSTGRES_DATABASE:-squonk}" \
+  migrate
 
 echo "Upgrade complete"
