@@ -38,7 +38,12 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
     /**
      * The name of the docker image to use
      */
-    private final String imageName;
+    private String imageName;
+
+    /**
+     * The image pull secret (optional)
+     */
+    private String imagePullSecret;
 
     /**The command to execute
      *
@@ -142,12 +147,16 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
             IODescriptor[] inputDescriptors,
             IODescriptor[] outputDescriptors
             ) {
-        this(id, name, null, null, null, null, null, null, inputDescriptors, null, outputDescriptors, null, null, null, null, null, null, null);
+        this(id, name, null, null, null, null, null, null, inputDescriptors, null, outputDescriptors, null, null, null, null, null, null, null, null);
     }
 
 
     public String getImageName() {
         return imageName;
+    }
+
+    public String getImagePullSecret() {
+        return imagePullSecret;
     }
 
     public String getCommand() {
@@ -157,4 +166,13 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
     public Map<String, String> getVolumes() {
         return volumes;
     }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public void setImagePullSecret(String imagePullSecret) {
+        this.imagePullSecret = imagePullSecret;
+    }
+
 }

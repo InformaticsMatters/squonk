@@ -213,7 +213,7 @@ public class ExecutableJob {
 
         LOG.fine("Creating container runner. image=" + image +
                  " imagePullSecret=" + imagePullSecret +
-                 " workDir='" + workDir + "'");
+                 " workdir='" + workdir + "'");
 
         ContainerRunner runner = null;
         if (CONTAINER_RUNNER_TYPE.equals("docker")) {

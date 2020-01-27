@@ -160,15 +160,26 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                         throw new RuntimeException("Failed to read service descriptor");
                     }
 
-                    // If the header 'Image-Pull-Secret' exists and has a value then we assume
-                    // the service descriptor can support a pull secret and so we
+                    // Is there a pull secret header? ('Image-Pull-Secret')
+                    // If so the service descriptor can support a pull secret and so we
                     // insert the supplied image pull secret into the corresponding descriptor class.
                     String imagePullSecret = exch.getIn().getHeader("Image-Pull-Secret", String.class);
                     LOG.info("imagePullSecret is " + imagePullSecret);
                     if (imagePullSecret != null && imagePullSecret.length() > 0) {
-                        if (baseUrl.startsWith('docker')) {
+                        if (baseUrl.startsWith("docker")) {
                             LOG.info("Setting Docker imagePullSecret to " + imagePullSecret);
-                            ((DockerServiceDescriptor) sd).imagePullSecret = imagePullSecret;
+                            ((DockerServiceDescriptor) sd).setImagePullSecret(imagePullSecret);
+                        }
+                    }
+                    // Is there a registry header ('Image-Registry')?
+                    // If so prefix the image name with it.
+                    String imageRegistry = exch.getIn().getHeader("Image-Registry", String.class);
+                    if (imageRegistry != null && imageRegistry.length() > 0) {
+                        if (baseUrl.startsWith("docker")) {
+                            String imageName = ((DockerServiceDescriptor) sd).getImageName();
+                            imageName = imageRegistry + "/" + imageName;
+                            LOG.info("Setting Docker imageName§ to " + imageName);
+                            ((DockerServiceDescriptor) sd).setImageName(imageName);
                         }
                     }
 

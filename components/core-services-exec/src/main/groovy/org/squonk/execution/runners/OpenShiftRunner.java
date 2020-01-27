@@ -19,7 +19,7 @@ package org.squonk.execution.runners;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.google.common.collect.EvictingQueue;
-import io..kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
@@ -390,7 +390,7 @@ public class OpenShiftRunner extends AbstractRunner {
         super(hostBaseWorkDir, jobId);
 
         LOG.info("imageName='" + imageName + "'" +
-                 " kubenetesPullSecretName='" + kubenetesPullSecretName + "'" +
+                 " imagePullSecret='" + imagePullSecret + "'" +
                  " hostBaseWorkDir='" + hostBaseWorkDir + "'" +
                  " localWorkDir='" + localWorkDir + "'" +
                  " jobId='" + jobId + "'");
@@ -629,12 +629,12 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withEnv(containerEnv)
                 .withVolumeMounts(volumeMount).build();
 
+        // Here we prepare a (potentially empty) list of pull secrets
+        // for the Pod.
         List<LocalObjectReference> pullSecrets= new ArrayList<>();
         if (imagePullSecret != null && imagePullSecret.length() > 0) {
-            pullSecrets.add(new LocalObjectReference(imagePullSecret))
+            pullSecrets.add(new LocalObjectReference(imagePullSecret));
         }
-        PodSpec podSpec = new PodSpecBuilder()
-                .withImagePullSecrets(pullSecrets).build();
 
         // Here we add supplemental groups to the Pod.
         // Crucially we need to add our own group as the Pod's
@@ -650,7 +650,8 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withName(podName)
                 .withNamespace(OS_PROJECT)
                 .endMetadata()
-                .withSpec(podSpec)
+                .withNewSpec()
+                .withImagePullSecrets(pullSecrets)
                 .withSecurityContext(psc)
                 .withContainers(podContainer)
                 .withServiceAccount(OS_SA)
