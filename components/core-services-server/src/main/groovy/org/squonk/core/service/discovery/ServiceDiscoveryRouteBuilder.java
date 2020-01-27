@@ -160,6 +160,18 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                         throw new RuntimeException("Failed to read service descriptor");
                     }
 
+                    // If the header 'Image-Pull-Secret' exists and has a value then we assume
+                    // the service descriptor can support a pull secret and so we
+                    // insert the supplied image pull secret into the corresponding descriptor class.
+                    String imagePullSecret = exch.getIn().getHeader("Image-Pull-Secret", String.class);
+                    LOG.info("imagePullSecret is " + imagePullSecret);
+                    if (imagePullSecret != null && imagePullSecret.length() > 0) {
+                        if (baseUrl.startsWith('docker')) {
+                            LOG.info("Setting Docker imagePullSecret to " + imagePullSecret);
+                            ((DockerServiceDescriptor) sd).imagePullSecret = imagePullSecret;
+                        }
+                    }
+
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
                     reg.init(); // this ensures the descriptors are loaded from the DB before we update anything
 
