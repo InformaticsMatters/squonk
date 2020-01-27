@@ -80,10 +80,12 @@ public class DefaultDockerExecutorStep extends AbstractContainerStep {
         // Normally required when the image is located in a private Docker regsitry.
         // This will either be null or an empty string if it's not required.
         String imagePullSecret = descriptor.getImagePullSecret();
+        LOG.info("Docker image: " + image + " imagePullSecret: " + imagePullSecret);
 
         ContainerRunner containerRunner = createContainerRunner(image, imagePullSecret);
         containerRunner.init();
-        LOG.info("Docker image: " + image + ", hostWorkDir: " + containerRunner.getHostWorkDir() + ", command: " + expandedCommand);
+        LOG.info("Docker hostWorkDir: " + containerRunner.getHostWorkDir() +
+                 " command: " + expandedCommand);
 
         // add the resources
         if (descriptor.getVolumes() != null) {

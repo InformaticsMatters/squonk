@@ -178,7 +178,19 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                         if (baseUrl.startsWith("docker")) {
                             String imageName = ((DockerServiceDescriptor) sd).getImageName();
                             imageName = imageRegistry + "/" + imageName;
-                            LOG.info("Setting Docker imageName§ to " + imageName);
+                            LOG.info("Adding Registry to imageName " + imageName);
+                            ((DockerServiceDescriptor) sd).setImageName(imageName);
+                        }
+                    }
+                    // Is there an image tag? ('Image-Tag')
+                    // If so, replace any existing image tag with the value supplied.
+                    String imageTag = exch.getIn().getHeader("Image-Tag", String.class);
+                    if (imageTag != null && imageTag.length() > 0) {
+                        if (baseUrl.startsWith("docker")) {
+                            String imageName = ((DockerServiceDescriptor) sd).getImageName();
+                            String[] imageNameParts = imageName.split(":");
+                            imageName = imageNameParts[0] + ":" + imageTag;
+                            LOG.info("Replacing tag in imageName " + imageName);
                             ((DockerServiceDescriptor) sd).setImageName(imageName);
                         }
                     }

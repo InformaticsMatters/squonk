@@ -200,18 +200,25 @@ public class ExecutableJob {
     }
 
     protected ContainerRunner createContainerRunner(String image) throws IOException {
-        return createContainerRunner(image, null);
+
+        LOG.info("Creating container runner. image=" + image);
+        return createContainerRunner(image, null, null);
+
     }
 
     protected ContainerRunner createContainerRunner(String image, String imagePullSecret) throws IOException {
-        return createContainerRunner(image, null, null);
+
+        LOG.info("Creating container runner. image=" + image +
+                 " imagePullSecret=" + imagePullSecret);
+        return createContainerRunner(image, imagePullSecret, null);
+
     }
 
     protected ContainerRunner createContainerRunner(String image, String imagePullSecret, String workdir) throws IOException {
         // The CONTAINER_RUNNER_TYPE (environment variable) defines what
         // type of ContainerRunner we produce...
 
-        LOG.fine("Creating container runner. image=" + image +
+        LOG.info("Creating container runner. image=" + image +
                  " imagePullSecret=" + imagePullSecret +
                  " workdir='" + workdir + "'");
 
