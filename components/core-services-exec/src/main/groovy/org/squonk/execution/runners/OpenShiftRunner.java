@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.squonk.execution.runners;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.google.common.collect.EvictingQueue;
-import io.fabric8.kubernetes.api.model.*;
+import io..kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
@@ -116,6 +116,7 @@ public class OpenShiftRunner extends AbstractRunner {
     private String subPath;
     private String podName;
     private String imageName;
+    private String imagePullSecret;
 
     // The nextflow profile name.
     // This is modified if the call to addExtraNextflowConfig() is made.
@@ -364,6 +365,9 @@ public class OpenShiftRunner extends AbstractRunner {
      * init() and then execute().
      *
      * @param imageName       The Docker image to run.
+     * @param imagePullSecret If non-null and non-empty, the name of a pull secret,
+     *                        exected to exist in the namespace of the Job to be launched,
+     *                        that provides credentials to pull the Docker image.
      * @param hostBaseWorkDir The directory on the host that will be used to
      *                        create a work dir. It must exist or be creatable
      *                        and be writeable. This is typically
@@ -377,16 +381,22 @@ public class OpenShiftRunner extends AbstractRunner {
      *              necessarily the same as the uuid found in the
      *              `hostBaseWorkDir`
      */
-    public OpenShiftRunner(String imageName, String hostBaseWorkDir, String localWorkDir, String jobId) {
+    public OpenShiftRunner(String imageName,
+                           String imagePullSecret,
+                           String hostBaseWorkDir,
+                           String localWorkDir,
+                           String jobId) {
 
         super(hostBaseWorkDir, jobId);
 
         LOG.info("imageName='" + imageName + "'" +
+                 " kubenetesPullSecretName='" + kubenetesPullSecretName + "'" +
                  " hostBaseWorkDir='" + hostBaseWorkDir + "'" +
                  " localWorkDir='" + localWorkDir + "'" +
                  " jobId='" + jobId + "'");
 
         this.imageName = imageName;
+        this.imagePullSecret = imagePullSecret;
 
         // Append 'latest' if tag's not specified.
         if (!this.imageName.contains(":")) {
@@ -619,6 +629,13 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withEnv(containerEnv)
                 .withVolumeMounts(volumeMount).build();
 
+        List<LocalObjectReference> pullSecrets= new ArrayList<>();
+        if (imagePullSecret != null && imagePullSecret.length() > 0) {
+            pullSecrets.add(new LocalObjectReference(imagePullSecret))
+        }
+        PodSpec podSpec = new PodSpecBuilder()
+                .withImagePullSecrets(pullSecrets).build();
+
         // Here we add supplemental groups to the Pod.
         // Crucially we need to add our own group as the Pod's
         // supplemental group - so it can share directories
@@ -633,14 +650,13 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withName(podName)
                 .withNamespace(OS_PROJECT)
                 .endMetadata()
-                .withNewSpec()
+                .withSpec(podSpec)
                 .withSecurityContext(psc)
                 .withContainers(podContainer)
                 .withServiceAccount(OS_SA)
                 .withRestartPolicy(OS_POD_RESTART_POLICY)
                 .withVolumes(volume)
                 .endSpec().build();
-
 
         // Create a Pod 'watcher'
         // to monitor the Pod execution progress...

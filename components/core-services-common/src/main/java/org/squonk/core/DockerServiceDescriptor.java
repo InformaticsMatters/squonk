@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
      * @param thinDescriptors   Descriptors for thin execution
      * @param executorClassName The class name of the executor
      * @param imageName         Docker image to use if not overriden by one of the user defined options (e.g. if there is a choice of images to use).
+     * @param imagePullSecret   The name of a secret required to pull the Docker image, empty if not required (used for Kubernetes deployments).
      * @param command           The command to run when executing the container.
      * @param volumes           Volumes that need to be mounted. Primarily the volume that contains the scripts to execute. The key is the directory to
      *                          mount (relative to the configured directory that contains mountable volumes), the value is where to mount it in
@@ -113,6 +114,7 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
             // these are specific to docker execution
             String executorClassName,
             String imageName,
+            String imagePullSecret,
             String command,
             Map<String, String> volumes) {
 
@@ -121,6 +123,7 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
                 thinDescriptors, inputRoutes, outputRoutes);
 
         this.imageName = imageName;
+        this.imagePullSecret = imagePullSecret;
         this.command = command;
         this.volumes = volumes;
     }
