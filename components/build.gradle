@@ -21,6 +21,12 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
+// The user would normally set these in their gradle properties file.
+// But, to support basic builds (which do not require these credentials)
+// we set them to a default value if not set.
+def cxnMavenUser = project.hasProperty('cxnMavenUser') ? project.cxnMavenUser : 'SetMe'
+def cxnMavenPassword = project.hasProperty('cxnMavenPassword') ? project.cxnMavenPassword : 'SetMe'
+
 buildscript {
     repositories {
         jcenter()

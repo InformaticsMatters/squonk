@@ -24,6 +24,16 @@ apply plugin: 'org.unbroken-dome.test-sets'
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
+// Origin of the flyway migration commands.
+// Empty for the default "migration", or "-k8s" for
+// "migration-k8s". The suffix is also applied to the image name.
+// So migrations for migration-k8s are contained in the image flyway-k8s.
+def flywayMigrationSuffix = System.getenv('FLYWAY_MIGRATION_SUFFIX')
+if (flywayMigrationSuffix == null || flywayMigrationSuffix.length() == 0) {
+    flywayMigrationSuffix = ""
+}
+def flywayMigrationRoot = "migration${flywayMigrationSuffix}"
+
 buildscript {
     repositories {
         jcenter()
@@ -59,6 +69,9 @@ task buildDockerFile(type: Dockerfile) {
     label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
     label(['commit-hash': "${imageCommitHash}"])
 
+    runCommand("useradd -d /flyway -s /bin/bash flyway")
+    workingDir("/flyway")
+
     runCommand("""wget -q https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flywayVersion}/flyway-commandline-${flywayVersion}.zip &&\
  unzip flyway-commandline-${flywayVersion}.zip &&\
  rm flyway-commandline-${flywayVersion}.zip &&\
@@ -68,13 +81,17 @@ task buildDockerFile(type: Dockerfile) {
  rm ../conf/flyway.conf
 """)
 
-    workingDir("/flyway-${flywayVersion}")
+    workingDir("flyway-${flywayVersion}")
 
     addFile("src/main/upgrade-postgres.sh", "./")
     addFile("src/main/flyway.conf", "conf/")
-    addFile("src/main/resources/db/migration/*.sql", "sql/")
+    addFile("src/main/resources/db/${flywayMigrationRoot}/*.sql", "sql/")
 
-    entryPoint("sh", "upgrade-postgres.sh")
+    runCommand("chown -R flyway.flyway /flyway")
+    runCommand("chmod +x upgrade-postgres.sh")
+    user("flyway")
+    defaultCommand("./upgrade-postgres.sh")
+
 }
 
 task buildDockerImage(type: DockerBuildImage) {
@@ -83,6 +100,6 @@ task buildDockerImage(type: DockerBuildImage) {
 
     inputDir = projectDir
     dockerFile = buildDockerFile.destFile
-    tag = "squonk/flyway:${dockerImageTag}"
-}
+    tag = "squonk/flyway${flywayMigrationSuffix}:${dockerImageTag}"
 
+}
