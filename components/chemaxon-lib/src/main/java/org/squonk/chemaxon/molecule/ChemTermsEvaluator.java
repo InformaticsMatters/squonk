@@ -91,8 +91,13 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
         this.chemTermsFunction = chemTermsFunction;
         this.mode = mode;
         this.metricsCode = metricsCode;
-        // create ChemJEP pool, compile the Chemical Terms expression
-        this.pool = new ChemJEPPool(chemTermsFunction, 25);
+        if (chemTermsFunction != null) {
+            // Create ChemJEP pool, compile the Chemical Terms expression
+            // If lazy creation is in place then there may be no chemTermsFunction
+            this.pool = new ChemJEPPool(chemTermsFunction, 25);
+        } else {
+            this.pool = null;
+        }
     }
 
     @Override

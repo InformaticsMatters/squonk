@@ -232,10 +232,20 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "chemaxon.calculators.kidsMpo",
                     "KiDS MPO (CXN)",
                     "KiDS MPO score using ChemAxon calculators",
-                    new String[]{"kids", "mpo", "hbond", "donors", "tpsa", "rotatablebonds", "atomcount", "ringcount", "molecularproperties", "chemaxon"},
+                    new String[]{"kids", "mpo", "hbond", "donors", "tpsa", "rotatablebonds", "atomcount", "ringcount", "aromaticringcount", "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
                     "/docs/cells/KiDS%20MPO%20(CXN)/",
                     "kidsMpo",
+                    createMpoOptionDescriptors(),
+                    null),
+            createServiceDescriptor(
+                    "chemaxon.calculators.abbvieMpo",
+                    "AbbVie MPO (CXN)",
+                    "AbbVie MPO score using ChemAxon calculators",
+                    new String[]{"abbvie", "mpo", "rotatablebonds", "ringcount", "aromaticringcount", "molecularproperties", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    "/docs/cells/AbbVie%20MPO%20(CXN)/",
+                    "abbvieMpo",
                     createMpoOptionDescriptors(),
                     null)
 
@@ -615,6 +625,16 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .post("kidsMpo").description("Generate the KiDS MPO score for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_KIDS_MPO, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("abbvieMpo").description("Generate the Abbvie MPO score for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ABBVIE_MPO, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("bbbGuptaMpo").description("Generate the Gutpa et a. BBB MPO score for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_BBB_GUPTA_MPO, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("chemTerms").description("Calculate a chemical terms expression for the supplied MoleculeObjects")

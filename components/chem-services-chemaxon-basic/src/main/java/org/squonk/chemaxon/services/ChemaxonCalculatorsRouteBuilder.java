@@ -23,9 +23,12 @@ import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.chemaxon.processor.ChemAxonVerifyStructureProcessor;
+import org.squonk.camel.processor.AbstractCalculationProcessor;
 import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.processor.MpoAccumulatorProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
+import org.squonk.chemaxon.molecule.LazyPKaChemTermsEvaluator;
+import org.squonk.types.MoleculeObject;
 import org.squonk.util.CommonConstants;
 import org.squonk.util.MpoFunctions;
 
@@ -58,6 +61,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
     public static final String CHEMAXON_REOS = "direct:reos_filter";
     public static final String CHEMAXON_CNS_MPO = "direct:cns_mpo_score";
     public static final String CHEMAXON_KIDS_MPO = "direct:kids_mpo_score";
+    public static final String CHEMAXON_ABBVIE_MPO = "direct:abbvie_mpo_score";
+    public static final String CHEMAXON_BBB_GUPTA_MPO = "direct:bbb_gupta_mpo_score";
 
 
     @Override
@@ -257,7 +262,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         .tpsa()
                         .donorCount()
                         .bpKa()
-                )   
+                )
                 .process(new MpoAccumulatorProcessor(
                         "CNS_MPO_CXN",
                         "CNS MPO score using ChemAxon calculators",
@@ -306,12 +311,88 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         .addHumpFunction("AtomCount_O_CXN",
                                 MpoFunctions.createHump1Function(0.2d, 1d, 0d, 0d, 1d, 1d, 3d))
                         .addHumpFunction(ChemTermsEvaluator.HBOND_DONOR_COUNT,
-                                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d,0d, 2d, 3d, 4d, 6d, 7d))
+                                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 0d, 2d, 3d, 4d, 6d, 7d))
                         .addHumpFunction(ChemTermsEvaluator.AROMATIC_RING_COUNT,
-                                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d,1d, 3d, 3d, 4d, 4d, 5d))
+                                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 1d, 3d, 3d, 4d, 4d, 5d))
                 )
                 .log("CHEMAXON_KIDS_MPO finished");
 
+
+        from(CHEMAXON_ABBVIE_MPO)
+                .log("CHEMAXON_ABBVIE_MPO starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor()
+                        .logD(7.4f)
+                        .rotatableBondCount()
+                        .aromaticRingCount()
+                )
+                .process(new AbstractCalculationProcessor(
+                        "ABBVIE_MPO_CXN",
+                        "AbbVie MPO score using ChemAxon calculators",
+                        Float.class,
+                        CommonConstants.OPTION_FILTER_MODE,
+                        CommonConstants.OPTION_FILTER_THRESHOLD) {
+
+                    /**
+                     * Calculate abs(logD - 3) + num_aromatic_rings + num_rotatable_bonds
+                     * @param mo
+                     */
+                    protected void processMoleculeObject(MoleculeObject mo) {
+                        Integer nar = mo.getValue(ChemTermsEvaluator.AROMATIC_RING_COUNT, Integer.class);
+                        Integer rotb = mo.getValue(ChemTermsEvaluator.ROTATABLE_BOND_COUNT, Integer.class);
+                        Double logd = mo.getValue(ChemTermsEvaluator.LOGD + "_7.4", Double.class);
+                        if (nar == null || rotb == null || logd == null) {
+                            LOG.fine("Values not present");
+                            // do nothing
+                        } else {
+                            double result = Math.abs(logd - 3) + (double)nar + (double)rotb;
+                            mo.putValue(calculatedPropertyName, result);
+                        }
+                    }
+
+                })
+                .log("CHEMAXON_KIDS_MPO finished");
+
+
+        from(CHEMAXON_BBB_GUPTA_MPO)
+                .log("CHEMAXON_BBB_GUPTA_MPO starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor()
+                        .aromaticRingCount()
+                        .heavyAtomCount()
+                        .donorCount()
+                        .acceptorCount()
+                        .molWeight()
+                        .tpsa()
+                        .rotatableBondCount()
+                        .addEvaluatorDefinition(new LazyPKaChemTermsEvaluator("pka_type"))
+                )
+//                .process(new AbstractCalculationProcessor(
+//                        "CHEMAXON_BBB_GUPTA_MPO",
+//                        "Gupta et. al BBB MPO score using ChemAxon calculators",
+//                        Float.class,
+//                        CommonConstants.OPTION_FILTER_MODE,
+//                        CommonConstants.OPTION_FILTER_THRESHOLD) {
+//
+//                    /**
+//                     * Calculate abs(logD - 3) + num_aromatic_rings + num_rotatable_bonds
+//                     * @param mo
+//                     */
+//                    protected void processMoleculeObject(MoleculeObject mo) {
+//                        Integer nar = mo.getValue(ChemTermsEvaluator.AROMATIC_RING_COUNT, Integer.class);
+//                        Integer rotb = mo.getValue(ChemTermsEvaluator.ROTATABLE_BOND_COUNT, Integer.class);
+//                        Double logd = mo.getValue(ChemTermsEvaluator.LOGD + "_7.4", Double.class);
+//                        if (nar == null || rotb == null || logd == null) {
+//                            LOG.fine("Values not present");
+//                            // do nothing
+//                        } else {
+//                            double result = Math.abs(logd - 3) + (double)nar + (double)rotb;
+//                            mo.putValue(calculatedPropertyName, result);
+//                        }
+//                    }
+//
+//                })
+                .log("CHEMAXON_BBB_GUPTA_MPO finished");
 
         // Dynamic route that requires the chem terms configuration to be set using the
         // ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property. 

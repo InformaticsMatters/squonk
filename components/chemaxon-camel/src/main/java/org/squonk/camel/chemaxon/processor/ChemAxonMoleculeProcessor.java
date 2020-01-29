@@ -159,7 +159,16 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
     private boolean sequential = false;
 
-    private final List<MoleculeEvaluator> evaluators = new ArrayList<>();
+    /**
+     * The Evaluator definitions
+     */
+    private final List<MoleculeEvaluator> evaluatorDefinitions = new ArrayList<>();
+
+    /**
+     * The runtime evaluators, typically the same as the evaluatorDefinitions but can be different if they are composed
+     * at runtime by overriding the init() method.
+     */
+    private final List<MoleculeEvaluator> runtimeEvaluators = new ArrayList<>();
 
     public boolean isSequential() {
         return sequential;
@@ -167,6 +176,11 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
     public void makeSequential() {
         this.sequential = true;
+    }
+
+    public ChemAxonMoleculeProcessor addEvaluatorDefinition(MoleculeEvaluator evaluator) {
+        evaluatorDefinitions.add(evaluator);
+        return this;
     }
 
     /**
@@ -182,7 +196,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
      * @throws ParseException
      */
     public ChemAxonMoleculeProcessor calculate(String name, String ctExpression, String metricsCode) throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(name, ctExpression, metricsCode));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(name, ctExpression, metricsCode));
         return this;
     }
 
@@ -195,7 +209,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
      * @throws ParseException
      */
     public ChemAxonMoleculeProcessor filter(String ctExpression, String metricsCode) throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Filter, metricsCode));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Filter, metricsCode));
         return this;
     }
 
@@ -212,12 +226,12 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
      * @throws ParseException
      */
     public ChemAxonMoleculeProcessor transform(String ctExpression, String metricsCode) throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Transform, metricsCode));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Transform, metricsCode));
         return this;
     }
 
     public ChemAxonMoleculeProcessor standardize(String szrExpression) {
-        evaluators.add(new StandardizerEvaluator(szrExpression, 25));
+        evaluatorDefinitions.add(new StandardizerEvaluator(szrExpression, 25));
         return this;
     }
 
@@ -311,7 +325,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
 
     /**
-     * Get or create the evaluators by whatever means we can. If these have been
+     * Get or create the evaluatorDefinitions by whatever means we can. If these have been
      * defined using the #calculate() or related methods then those are used. If
      * not we try to create ones specific for this Exchange based on header
      * parameters.
@@ -322,8 +336,8 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
      */
     List<MoleculeEvaluator> createEvaluators(Exchange exchange) throws ParseException {
         List<MoleculeEvaluator> result = null;
-        if (evaluators != null && !evaluators.isEmpty()) {
-            result = evaluators;
+        if (evaluatorDefinitions != null && !evaluatorDefinitions.isEmpty()) {
+            result = evaluatorDefinitions;
         } else {
             String defs = exchange.getIn().getHeader(PROP_EVALUATORS_DEFINTION, String.class);
             if (defs == null) {
@@ -336,7 +350,14 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                 throw new IllegalStateException("No Chem terms configuration supplied");
             }
         }
-        return result;
+
+        // initialise the evaluator, allowing initialisation to use runtime info
+        Map<String,Object> headers = exchange.getIn().getHeaders();
+        for (MoleculeEvaluator e : result) {
+            runtimeEvaluators.add(e.init(headers));
+        }
+
+        return runtimeEvaluators;
     }
 
     /**
@@ -350,7 +371,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     public Map<String, Object> extractResults(Molecule mol
     ) {
         Map<String, Object> results = new HashMap<>();
-        for (MoleculeEvaluator evaluator : evaluators) {
+        for (MoleculeEvaluator evaluator : runtimeEvaluators) {
             Map<String, Object> data = evaluator.getResults(mol);
             results.putAll(data);
         }
@@ -383,13 +404,13 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
 
     public ChemAxonMoleculeProcessor logP() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.LOGP, "logP()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGP)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.LOGP, "logP()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGP)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor logD(Float pH) throws ParseException {
         String pHString = pH == null ? "7.4" : pH.toString();
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.LOGD + "_" + pHString, "logD('" + pHString + "')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGD)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.LOGD + "_" + pHString, "logD('" + pHString + "')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGD)));
         return this;
     }
 
@@ -401,7 +422,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 //        String ctExpr = "logS('" + pHString + "','" + resultString + "')";
         String propName = ChemTermsEvaluator.LOGS + "_" + pHString;
         String ctExpr = "logS('" + pHString + "')";
-        evaluators.add(new ChemTermsEvaluator(propName, ctExpr, Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGS)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(propName, ctExpr, Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGS)));
         // The logS predictor does not run correctly. This workaround of avoiding multi-threading in place until it is resolved.
         // See https://github.com/InformaticsMatters/squonk/issues/13
         this.makeSequential();
@@ -409,17 +430,17 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     }
 
     public ChemAxonMoleculeProcessor donorCount() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.HBOND_DONOR_COUNT, "donorCount()",Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBD)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.HBOND_DONOR_COUNT, "donorCount()",Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBD)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor acceptorCount() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT, "acceptorCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBA)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT, "acceptorCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBA)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor atomCount() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.ATOM_COUNT, "atomCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.ATOM_COUNT, "atomCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
         return this;
     }
 
@@ -431,62 +452,62 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
      * @throws ParseException
      */
     public ChemAxonMoleculeProcessor atomCount(String expression, String propertyName) throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(propertyName, "atomCount('" + expression + "')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(propertyName, "atomCount('" + expression + "')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor heavyAtomCount() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.HEAVY_ATOM_COUNT, "atomCount() - atomCount('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.HEAVY_ATOM_COUNT, "atomCount() - atomCount('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor bondCount() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.BOND_COUNT, "bondCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_BOND_COUNT)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.BOND_COUNT, "bondCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_BOND_COUNT)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor molWeight() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.MOLECULAR_WEIGHT, "mass()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MASS)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.MOLECULAR_WEIGHT, "mass()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MASS)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor ringCount() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.RING_COUNT, "ringCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.RING_COUNT, "ringCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor aromaticRingCount() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.AROMATIC_RING_COUNT, "aromaticRingCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.AROMATIC_RING_COUNT, "aromaticRingCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor rotatableBondCount() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.ROTATABLE_BOND_COUNT, "rotatableBondCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ROTATABLE_BOND_COUNT)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.ROTATABLE_BOND_COUNT, "rotatableBondCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ROTATABLE_BOND_COUNT)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor molarRefractivity() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.MOLAR_REFRACTIVITY, "refractivity()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MOLAR_REFRACTIVITY)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.MOLAR_REFRACTIVITY, "refractivity()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MOLAR_REFRACTIVITY)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor formalCharge() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.FORMAL_CHARGE, "formalCharge()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_CHARGE)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.FORMAL_CHARGE, "formalCharge()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_CHARGE)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor tpsa() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.TPSA, "topologicalPolarSurfaceArea()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PSA)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.TPSA, "topologicalPolarSurfaceArea()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PSA)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor apKa() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.APKA, "acidicpKa('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PKA)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.APKA, "acidicpKa('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PKA)));
         return this;
     }
 
     public ChemAxonMoleculeProcessor bpKa() throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.BPKA, "basicpKa('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PKA)));
+        evaluatorDefinitions.add(new ChemTermsEvaluator(ChemTermsEvaluator.BPKA, "basicpKa('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PKA)));
         return this;
     }
 

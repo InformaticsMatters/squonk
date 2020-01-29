@@ -103,9 +103,10 @@ public abstract class AbstractThinStep extends AbstractStep {
                 Object value = inputs.get(iod.getName());
                 ThinDescriptor td = findThinDescriptorForInput(serviceDescriptor, iod.getName());
                 if (td != null) {
+                    LOG.info("Found ThinDescriptor for input " + iod.getName());
                     thinDescriptors.put(iod.getName(), td);
                 } else if (value instanceof Dataset && inputDescriptors.length == 1 && outputDescriptors.length == 1) {
-                    LOG.info("Creating default ThinDescriptor");
+                    LOG.info("Creating default ThinDescriptor for input " + iod.getName());
                     // special case where there is 1 input and 1 output and no ThinDescriptor defined so we create one with default params
                     td = new ThinDescriptor(iod.getName(), outputDescriptors[0].getName());
                     thinDescriptors.put(iod.getName(), td);

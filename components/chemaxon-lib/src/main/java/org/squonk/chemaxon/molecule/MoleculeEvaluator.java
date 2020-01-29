@@ -33,6 +33,14 @@ public interface MoleculeEvaluator {
         Calculate, Filter, Transform
     }
 
+    /**
+     *  Allow to pass in initialisation data. This method is called before the evaluator is asked to process any molecules.
+     *  Default is to return `this`, but allows to return whatever evaluator is needed based on runtime info.
+     * @param config
+     */
+    default MoleculeEvaluator init(Map<String,Object> config) {
+        return this;
+    }
     
     Molecule processMolecule(Molecule mol, Map<String,Integer> stats);
     
