@@ -25,14 +25,11 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 // Origin of the flyway migration SQL commands - the db migration directory.
-// Defined in the environment variable 'FLYWAY_MIGRATION_SUFFIX'.
+// Defined in the property 'flywayMigrationSuffix'.
 // Empty for the default "migration", or (typically) "-k8s" for
 // "migration-k8s". The suffix is also applied to the image name.
 // So migrations for migration-k8s are contained in the image flyway-k8s.
-def flywayMigrationSuffix = System.getenv('FLYWAY_MIGRATION_SUFFIX')
-if (flywayMigrationSuffix == null || flywayMigrationSuffix.length() == 0) {
-    flywayMigrationSuffix = ""
-}
+def flywayMigrationSuffix = project.hasProperty('flywayMigrationSuffix') ? project.flywayMigrationSuffix : ''
 def flywayMigrationRoot = "migration${flywayMigrationSuffix}"
 
 buildscript {
