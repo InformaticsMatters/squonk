@@ -39,7 +39,7 @@ class DockerRunnerSpec extends Specification {
     void "clean workdir"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", "123")
+        DockerRunner runner = new DockerRunner("informaticsmatters/pipelines-busybox:1.0.0", "123")
         runner.init()
 
         when:
@@ -47,23 +47,6 @@ class DockerRunnerSpec extends Specification {
 
         then:
         !runner.getHostWorkDir().exists()
-    }
-
-    void "simple execute"() {
-
-        setup:
-        DockerRunner runner = new DockerRunner("busybox", "123")
-        runner.init()
-
-        when:
-        runner.writeInput("run.sh", "touch IWasHere\n")
-        runner.execute("/bin/sh", "run.sh")
-
-        then:
-        new File(runner.getHostWorkDir(), 'IWasHere').exists()
-
-        cleanup:
-        runner.cleanup();
     }
 
 //    void "start and stop"() {

@@ -72,7 +72,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
                 [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 [outputIod] as IODescriptor[],
                 [new IORoute(IORoute.Route.FILE)] as IORoute[],
-                null, null, "executor", 'busybox', cmd, [:])
+                null, null, "executor", 'informaticsmatters/pipelines-busybox:1.0.0', cmd, [:])
 
         ThinDatasetDockerExecutorStep step = new ThinDatasetDockerExecutorStep()
         step.configure(jobId, options, dsd, context, null)
