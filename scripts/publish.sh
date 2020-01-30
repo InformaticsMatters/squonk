@@ -41,6 +41,7 @@ docker push squonk/cellexecutor:"$SQUONK_IMAGE_TAG"
 docker push squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG"
 docker push squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG"
 docker push squonk/flyway:"$SQUONK_IMAGE_TAG"
+docker push squonk/flyway-2:"$SQUONK_IMAGE_TAG"
 
 # If this is not 'latest'
 # then also tag and push new latest images...
@@ -54,6 +55,7 @@ then
   docker tag squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG" squonk/jobexecutor-keycloak:"$LATEST_TAG"
   docker tag squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG" squonk/chemcentral-loader:"$LATEST_TAG"
   docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" tag squonk/flyway:"$LATEST_TAG"
+  docker tag squonk/flyway-2:"$SQUONK_IMAGE_TAG" tag squonk/flyway:"$LATEST_TAG"
 
   docker push squonk/chemservices-basic:"$LATEST_TAG"
   docker push squonk/chemcentral-search:"$LATEST_TAG"
@@ -62,6 +64,7 @@ then
   docker push squonk/jobexecutor-keycloak:"$LATEST_TAG"
   docker push squonk/chemcentral-loader:"$LATEST_TAG"
   docker push squonk/flyway:"$LATEST_TAG"
+  docker push squonk/flyway-2:"$LATEST_TAG"
 fi
 
 popd || exit
