@@ -116,6 +116,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
          * The execution endpoint of the contained ServiceDescriptors will be expanded using the baseUrl property of the
          * ServiceDescriptorSet if it does not already start with 'http'.
          *
+         * You should only find this employed for 'http' types.
+         * 'docker' and 'nextflow' descriptors will normally be processed
+         * by the ROUTE_POST_SD_SINGLE method.
          */
         from(ROUTE_POST_SD_SET)
                 .log(LoggingLevel.DEBUG, ROUTE_POST_SD_SET)
@@ -183,15 +186,21 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                         }
                     }
                     // Is there an image tag? ('Image-Tag')
-                    // If so, replace any existing image tag with the value supplied.
+                    // If so, insert the provided tag where one does not already exist.
+                    // If the image has a tag then leave it alone - the user
+                    // has clearly declared that they want a  specific image
+                    // for this service.
                     String imageTag = exch.getIn().getHeader("Image-Tag", String.class);
                     if (imageTag != null && imageTag.length() > 0) {
                         if (baseUrl.startsWith("docker")) {
                             String imageName = ((DockerServiceDescriptor) sd).getImageName();
-                            String[] imageNameParts = imageName.split(":");
-                            imageName = imageNameParts[0] + ":" + imageTag;
-                            LOG.info("Replacing tag in imageName " + imageName);
-                            ((DockerServiceDescriptor) sd).setImageName(imageName);
+                            if (imageName.indexOf(':') == -1) {
+                                // There is no ':', so therefore no tag.
+                                // Append the supplied tag to the image name
+                                imageName += ":" + imageTag;
+                                LOG.info("Added tag to imageName " + imageName);
+                                ((DockerServiceDescriptor) sd).setImageName(imageName);
+                            }
                         }
                     }
 
