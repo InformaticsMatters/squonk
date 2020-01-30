@@ -630,7 +630,11 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withVolumeMounts(volumeMount).build();
 
         // Here we prepare a (potentially empty) list of pull secrets
-        // for the Pod.
+        // for the Pod. We only expect one secret so the result is
+        // either an empty list of a list containing one secret name.
+        // The 'imagePullSecret' is oto the secret itself
+        // it is simply the name of a pre-deployed Kubernetes Secret object.
+        // See https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
         List<LocalObjectReference> pullSecrets= new ArrayList<>();
         if (imagePullSecret != null && imagePullSecret.length() > 0) {
             pullSecrets.add(new LocalObjectReference(imagePullSecret));
