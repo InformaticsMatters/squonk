@@ -297,7 +297,8 @@ task dockerBuildImages() {
         'cell-executor:dockerBuildImage',              // squonk/cellexecutor
         'job-executor:buildDockerImage',               // squonk/jobexecutor
         'rdkit-databases:dockerBuildImage',            // squonk/chemcentral-loader
-        'database:buildDockerImage'                    // squonk/flyway
+        'database:buildDockerImage',                   // squonk/flyway
+        'database:buildDockerImage2'                   // squonk/flyway-2
     ]
 }
 
