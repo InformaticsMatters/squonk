@@ -17,6 +17,7 @@
 package org.squonk.chemaxon.services;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
@@ -26,11 +27,16 @@ import org.squonk.camel.chemaxon.processor.ChemAxonVerifyStructureProcessor;
 import org.squonk.camel.processor.AbstractCalculationProcessor;
 import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.processor.MpoAccumulatorProcessor;
+import org.squonk.chemaxon.molecule.BBBGuptaMPSCalculator;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.chemaxon.molecule.LazyPKaChemTermsEvaluator;
+import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.types.MoleculeObject;
 import org.squonk.util.CommonConstants;
 import org.squonk.util.MpoFunctions;
+
+import java.util.Collections;
+import java.util.stream.Stream;
 
 /**
  * These are routes that provide basic property calculation services. The input to the route is a
@@ -61,8 +67,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
     public static final String CHEMAXON_REOS = "direct:reos_filter";
     public static final String CHEMAXON_CNS_MPO = "direct:cns_mpo_score";
     public static final String CHEMAXON_KIDS_MPO = "direct:kids_mpo_score";
-    public static final String CHEMAXON_ABBVIE_MPO = "direct:abbvie_mpo_score";
-    public static final String CHEMAXON_BBB_GUPTA_MPO = "direct:bbb_gupta_mpo_score";
+    public static final String CHEMAXON_ABBVIE_MPS = "direct:abbvie_mps_score";
+    public static final String CHEMAXON_BBB_GUPTA_MPS = "direct:bbb_gupta_mps_score";
 
 
     @Override
@@ -281,12 +287,11 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                                 MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d))
                         .addHumpFunction(ChemTermsEvaluator.BPKA,
                                 MpoFunctions.createRampFunction(1d, 0d, 8d, 10d))
-                )
-                .log("CHEMAXON_CNS_MPO finished");
+                );
 
 
         from(CHEMAXON_KIDS_MPO)
-                .log("CHEMAXON_KIDS_MPO starting")
+                .log("Creating route CHEMAXON_KIDS_MPO")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
                         .tpsa()
@@ -314,12 +319,11 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                                 MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 0d, 2d, 3d, 4d, 6d, 7d))
                         .addHumpFunction(ChemTermsEvaluator.AROMATIC_RING_COUNT,
                                 MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 1d, 3d, 3d, 4d, 4d, 5d))
-                )
-                .log("CHEMAXON_KIDS_MPO finished");
+                );
 
 
-        from(CHEMAXON_ABBVIE_MPO)
-                .log("CHEMAXON_ABBVIE_MPO starting")
+        from(CHEMAXON_ABBVIE_MPS)
+                .log("Creating route CHEMAXON_ABBVIE_MPS")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
                         .logD(7.4f)
@@ -327,8 +331,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         .aromaticRingCount()
                 )
                 .process(new AbstractCalculationProcessor(
-                        "ABBVIE_MPO_CXN",
-                        "AbbVie MPO score using ChemAxon calculators",
+                        "ABBVIE_MPS_CXN",
+                        "AbbVie MPS score using ChemAxon calculators",
                         Float.class,
                         CommonConstants.OPTION_FILTER_MODE,
                         CommonConstants.OPTION_FILTER_THRESHOLD) {
@@ -350,12 +354,11 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         }
                     }
 
-                })
-                .log("CHEMAXON_KIDS_MPO finished");
+                });
 
 
-        from(CHEMAXON_BBB_GUPTA_MPO)
-                .log("CHEMAXON_BBB_GUPTA_MPO starting")
+        from(CHEMAXON_BBB_GUPTA_MPS)
+                .log("Creating route CHEMAXON_BBB_GUPTA_MPS")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
                         .aromaticRingCount()
@@ -367,49 +370,39 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         .rotatableBondCount()
                         .addEvaluatorDefinition(new LazyPKaChemTermsEvaluator("pka_type"))
                 )
-//                .process(new AbstractCalculationProcessor(
-//                        "CHEMAXON_BBB_GUPTA_MPO",
-//                        "Gupta et. al BBB MPO score using ChemAxon calculators",
-//                        Float.class,
-//                        CommonConstants.OPTION_FILTER_MODE,
-//                        CommonConstants.OPTION_FILTER_THRESHOLD) {
-//
-//                    /**
-//                     * Calculate abs(logD - 3) + num_aromatic_rings + num_rotatable_bonds
-//                     * @param mo
-//                     */
-//                    protected void processMoleculeObject(MoleculeObject mo) {
-//                        Integer nar = mo.getValue(ChemTermsEvaluator.AROMATIC_RING_COUNT, Integer.class);
-//                        Integer rotb = mo.getValue(ChemTermsEvaluator.ROTATABLE_BOND_COUNT, Integer.class);
-//                        Double logd = mo.getValue(ChemTermsEvaluator.LOGD + "_7.4", Double.class);
-//                        if (nar == null || rotb == null || logd == null) {
-//                            LOG.fine("Values not present");
-//                            // do nothing
-//                        } else {
-//                            double result = Math.abs(logd - 3) + (double)nar + (double)rotb;
-//                            mo.putValue(calculatedPropertyName, result);
-//                        }
-//                    }
-//
-//                })
-                .log("CHEMAXON_BBB_GUPTA_MPO finished");
+                .process((exch) -> {
+                    Message msg = exch.getIn();
+                    String propname = msg.getHeader("pka_type", String.class);
+                    String ctExpr;
+                    if ("acidic".equals(propname)) {
+                        ctExpr = ChemTermsEvaluator.APKA;
+                    } else if ("basic".equals(propname)) {
+                        ctExpr = ChemTermsEvaluator.APKA;
+                    } else {
+                        throw new IllegalStateException("Invalid pKa type: " + propname);
+                    }
+                    final BBBGuptaMPSCalculator calculator = new BBBGuptaMPSCalculator(
+                            Collections.singletonMap(BBBGuptaMPSCalculator.PROP_PKA, ctExpr));
+                    Stream<MoleculeObject> stream1 = msg.getBody(Stream.class);
+                    Stream stream2 = stream1.peek((mo) -> calculator.calculate(mo));
+
+                    exch.getIn().setBody(new MoleculeObjectDataset(stream2));
+                });
 
         // Dynamic route that requires the chem terms configuration to be set using the
         // ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property. 
         from(CHEMAXON_CHEMTERMS)
-                .log("CHEMAXON_CHEMTERMS starting")
+                .log("Creating route CHEMAXON_CHEMTERMS")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new ChemAxonMoleculeProcessor())
-                .log("CHEMAXON_CHEMTERMS finished");
+                .process(new ChemAxonMoleculeProcessor());
 
         // Aromatize the molecules
         from(CHEMAXON_AROMATIZE)
-                .log("CHEMAXON_AROMATIZE starting")
+                .log("Creating route CHEMAXON_AROMATIZE")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
                         .standardize("aromatize")
-                )
-                .log("CHEMAXON_AROMATIZE finished");
+                );
 
     }
 }

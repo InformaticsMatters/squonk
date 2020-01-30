@@ -17,7 +17,6 @@
 package org.squonk.chemaxon.services;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
@@ -226,7 +224,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "/docs/cells/CNS%20MPO%20(CXN)/",
                     "cnsMpo",
-                    createMpoOptionDescriptors(),
+                    createMpoOptionDescriptors().toArray(new OptionDescriptor[0]),
                     null),
             createServiceDescriptor(
                     "chemaxon.calculators.kidsMpo",
@@ -236,17 +234,29 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "/docs/cells/KiDS%20MPO%20(CXN)/",
                     "kidsMpo",
-                    createMpoOptionDescriptors(),
+                    createMpoOptionDescriptors().toArray(new OptionDescriptor[0]),
                     null),
             createServiceDescriptor(
-                    "chemaxon.calculators.abbvieMpo",
-                    "AbbVie MPO (CXN)",
-                    "AbbVie MPO score using ChemAxon calculators",
-                    new String[]{"abbvie", "mpo", "rotatablebonds", "ringcount", "aromaticringcount", "molecularproperties", "chemaxon"},
+                    "chemaxon.calculators.abbvieMps",
+                    "AbbVie MPS (CXN)",
+                    "AbbVie MPS score using ChemAxon calculators",
+                    new String[]{"abbvie", "mps", "rotatablebonds", "ringcount", "aromaticringcount", "druglike",
+                            "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
-                    "/docs/cells/AbbVie%20MPO%20(CXN)/",
-                    "abbvieMpo",
-                    createMpoOptionDescriptors(),
+                    "/docs/cells/AbbVie%20MPS%20(CXN)/",
+                    "abbvieMps",
+                    createMpoOptionDescriptors().toArray(new OptionDescriptor[0]),
+                    null),
+            createServiceDescriptor(
+                    "chemaxon.calculators.bbbGuptaMps",
+                    "BBB Gupta MPS (CXN)",
+                    "BBB MPS score from Gupta et al. using ChemAxon calculators",
+                    new String[]{"bbb", "mps", "rotatablebonds", "ringcount", "aromaticringcount", "rotatablebonds",
+                            "hbond", "donors", "acceptors", "molecularproperties", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    "/docs/cells/BBB%20Gupta%20MPS%20(CXN)/",
+                    "bbbGuptaMps",
+                    createMpoOptionDescriptors(createChoosePKAOptionDescriptors(new ArrayList<>())).toArray(new OptionDescriptor[0]),
                     null)
 
 //                createServiceDescriptor(
@@ -418,15 +428,25 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         return list.toArray(new OptionDescriptor[0]);
     }
 
+    static private List<OptionDescriptor> createChoosePKAOptionDescriptors(List<OptionDescriptor> list) {
+        list.add(new OptionDescriptor<>(String.class, "query.pka_type", "pKa type",
+                "The type of pKa to use (acidic or basic)", Mode.User)
+                .withValues(new String[] {"acidic", "basic"}));
 
-    static private OptionDescriptor[] createMpoOptionDescriptors() {
-        List<OptionDescriptor> list = new ArrayList<>();
+        return list;
+    }
+
+    static private List<OptionDescriptor> createMpoOptionDescriptors() {
+        return createMpoOptionDescriptors(new ArrayList<OptionDescriptor>());
+    }
+
+    static private List<OptionDescriptor> createMpoOptionDescriptors(List<OptionDescriptor> list) {
 
         list.add(OptionDescriptor.FILTER_MODE_ALL);
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Filter range",
                 "Range of MPO scores to accept", Mode.User));
 
-        return list.toArray(new OptionDescriptor[0]);
+        return list;
     }
 
 
@@ -627,14 +647,14 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_KIDS_MPO, resolver, ROUTE_STATS))
                 .endRest()
                 //
-                .post("abbvieMpo").description("Generate the Abbvie MPO score for the supplied MoleculeObjects")
+                .post("abbvieMps").description("Generate the Abbvie MPO score for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ABBVIE_MPO, resolver, ROUTE_STATS))
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ABBVIE_MPS, resolver, ROUTE_STATS))
                 .endRest()
                 //
-                .post("bbbGuptaMpo").description("Generate the Gutpa et a. BBB MPO score for the supplied MoleculeObjects")
+                .post("bbbGuptaMps").description("Generate the Gutpa et a. BBB MPO score for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_BBB_GUPTA_MPO, resolver, ROUTE_STATS))
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_BBB_GUPTA_MPS, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("chemTerms").description("Calculate a chemical terms expression for the supplied MoleculeObjects")

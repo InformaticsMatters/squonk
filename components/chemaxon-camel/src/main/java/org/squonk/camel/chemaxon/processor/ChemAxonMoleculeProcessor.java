@@ -17,7 +17,6 @@
 package org.squonk.camel.chemaxon.processor;
 
 import chemaxon.nfunk.jep.ParseException;
-import chemaxon.struc.Molecule;
 import com.chemaxon.version.VersionInfo;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -32,7 +31,6 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.Metrics;
-import org.squonk.util.ResultExtractor;
 import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
@@ -152,7 +150,7 @@ import static org.squonk.util.Metrics.*;
  *
  * @author Tim Dudgeon
  */
-public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Molecule> {
+public class ChemAxonMoleculeProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(ChemAxonMoleculeProcessor.class.getName());
     public static final String PROP_EVALUATORS_DEFINTION = "ChemTermsProcessor_EvaluatorsDefintion";
@@ -163,12 +161,6 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
      * The Evaluator definitions
      */
     private final List<MoleculeEvaluator> evaluatorDefinitions = new ArrayList<>();
-
-    /**
-     * The runtime evaluators, typically the same as the evaluatorDefinitions but can be different if they are composed
-     * at runtime by overriding the init() method.
-     */
-    private final List<MoleculeEvaluator> runtimeEvaluators = new ArrayList<>();
 
     public boolean isSequential() {
         return sequential;
@@ -353,29 +345,12 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
         // initialise the evaluator, allowing initialisation to use runtime info
         Map<String,Object> headers = exchange.getIn().getHeaders();
+        List<MoleculeEvaluator> runtimeEvaluators = new ArrayList<>();
         for (MoleculeEvaluator e : result) {
             runtimeEvaluators.add(e.init(headers));
         }
 
         return runtimeEvaluators;
-    }
-
-    /**
-     * Get the calculated results for the Molecule. Allow for a molecule to be
-     * passed back
-     *
-     * @param mol
-     * @return
-     */
-    @Override
-    public Map<String, Object> extractResults(Molecule mol
-    ) {
-        Map<String, Object> results = new HashMap<>();
-        for (MoleculeEvaluator evaluator : runtimeEvaluators) {
-            Map<String, Object> data = evaluator.getResults(mol);
-            results.putAll(data);
-        }
-        return results;
     }
 
     static List<MoleculeEvaluator> parseParamString(String query) throws ParseException {
