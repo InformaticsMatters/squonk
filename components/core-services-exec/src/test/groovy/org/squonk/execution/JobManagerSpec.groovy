@@ -58,7 +58,7 @@ class JobManagerSpec extends Specification {
                 null, //ThinDescriptor[] thinDescriptors,
                 // these are specific to docker execution
                 "org.squonk.execution.steps.impl.DefaultDockerExecutorStep", //String executorClassName,
-                "busybox",
+                "informaticsmatters/pipelines-busybox:1.0.0",
                 "cp input.sdf.gz output.sdf.gz",
                 null)
     }
@@ -85,7 +85,7 @@ class JobManagerSpec extends Specification {
                 null, //ThinDescriptor[] thinDescriptors,
                 // these are specific to docker execution
                 "org.squonk.execution.steps.impl.DefaultDockerExecutorStep", //String executorClassName,
-                "busybox",
+                "informaticsmatters/pipelines-busybox:1.0.0",
                 "cp input.data.gz output.data.gz && cp input.metadata output.metadata",
                 null)
     }

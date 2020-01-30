@@ -49,7 +49,7 @@ class DefaultDockerExecutorStepSpec extends Specification {
         DockerServiceDescriptor dsd = new DockerServiceDescriptor("id.busybox", "name", "desc",  null, null, null, null, null,
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
-                null, null, "executor", 'busybox', cmd, [:])
+                null, null, "executor", 'informaticsmatters/pipelines-busybox:1.0.0', cmd, [:])
 
         DefaultDockerExecutorStep step = new DefaultDockerExecutorStep()
         step.configure(jobId, options, dsd, context, null)
