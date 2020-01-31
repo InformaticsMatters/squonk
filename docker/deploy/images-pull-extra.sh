@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker pull informaticsmatters/groovy
+docker pull informaticsmatters/squonk-groovy:1.0.0
 
 docker pull rabbitmq:3-management
 docker pull nginx:1.13

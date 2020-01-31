@@ -37,7 +37,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunner
 
         String image = getOption(OPTION_DOCKER_IMAGE, String.class);
         if (image == null) {
-            image = "informaticsmatters/groovy";
+            image = "informaticsmatters/squonk-groovy:1.0.0";
         }
 
         String script = getOption(OPTION_SCRIPT, String.class);

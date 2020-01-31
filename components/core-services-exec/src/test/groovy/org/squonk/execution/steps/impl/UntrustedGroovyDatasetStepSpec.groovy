@@ -59,7 +59,7 @@ class UntrustedGroovyDatasetStepSpec extends Specification {
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 [new OptionDescriptor(String.class, "script", "", "", OptionDescriptor.Mode.User)] as OptionDescriptor[],
-                null, StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME, "informaticsmatters/groovy",
+                null, StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME, "informaticsmatters/squonk-groovy:1.0.0",
                 "execute", [:])
 
         UntrustedGroovyDatasetScriptStep step = new UntrustedGroovyDatasetScriptStep()
