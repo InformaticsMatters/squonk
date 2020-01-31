@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,6 @@ public abstract class AbstractCalculationProcessor implements Processor {
     private final String filterModeProperty;
     private final String filterRangeProperty;
 
-    private String prop_name_nar = "AromRingCount_CXN";
-    private String prop_name_logd = "LogD_CXN_7.4";
-    private String prop_name_rotb = "RotatableBondCount_CXN";
 
     /**
      *
@@ -90,21 +87,9 @@ public abstract class AbstractCalculationProcessor implements Processor {
         });
 
         // apply filter if necessary
-        if (filterModeProperty != null && filterRangeProperty != null) {
-            final String filterMode = exch.getIn().getHeader(filterModeProperty, String.class);
-            final String filterRange = exch.getIn().getHeader(filterRangeProperty, String.class);
-            if (filterMode != null && !CommonConstants.VALUE_INCLUDE_ALL.equals(filterMode)) {
-                if (filterMode != null && filterRange != null) {
-                    NumberRange.Double range = new NumberRange.Double(filterRange);
-                    final Double minScore = range.getMinValue() == null ? null : range.getMinValue().doubleValue();
-                    final Double maxScore = range.getMaxValue() == null ? null : range.getMaxValue().doubleValue();
-                    LOG.info("Filter: " + filterMode + " [" + minScore + " - " + maxScore + "]");
-                    if (minScore != null || maxScore != null) {
-                        stream = stream.filter((MoleculeObject mo) -> filter(mo, filterMode, minScore, maxScore));
-                    }
-                }
-            }
-        }
+        stream = MpoAccumulatorProcessor.applyFilters(exch.getIn(), stream, calculatedPropertyName,
+                filterModeProperty, filterRangeProperty);
+
         // convert from double to float if needed
         if (calculatedPropertyType == Float.class) {
             stream = stream.peek((mo) -> {
@@ -131,28 +116,6 @@ public abstract class AbstractCalculationProcessor implements Processor {
 
         MoleculeObjectDataset neu = new MoleculeObjectDataset(stream, meta);
         exch.getOut().setBody(neu);
-    }
-
-    protected boolean filter(MoleculeObject mo, String filterMode, Double minScore, Double maxScore) {
-        Double result = mo.getValue(calculatedPropertyName, Double.class);
-        if (filterMode == null || CommonConstants.VALUE_INCLUDE_ALL.equals(filterMode)) {
-            return true;
-        } else {
-            if (result == null) {
-                return false;
-            }
-            boolean inRange = false;
-            if ((minScore == null || minScore <= result.doubleValue()) &&
-                    (maxScore == null || maxScore >= result.doubleValue())) {
-                inRange = true;
-            }
-            //LOG.finer("Filtering: " + result.doubleValue() + " -> " + inRange);
-            if ((CommonConstants.VALUE_INCLUDE_PASS.equals(filterMode) && inRange) ||
-                    (CommonConstants.VALUE_INCLUDE_FAIL.equals(filterMode) && !inRange)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

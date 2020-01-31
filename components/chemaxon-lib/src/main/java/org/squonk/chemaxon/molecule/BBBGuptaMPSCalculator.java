@@ -68,6 +68,11 @@ public class BBBGuptaMPSCalculator {
         this.resultPropName = resultPropName;
     }
 
+
+    public String getResultPropName() {
+        return resultPropName;
+    }
+
     public void updateMetadata(DatasetMetadata meta) {
         meta.createField(FIELD_PKA, this.getClass().getName(),
                 "pKa value used for Gupta BBB calculation", Double.class);

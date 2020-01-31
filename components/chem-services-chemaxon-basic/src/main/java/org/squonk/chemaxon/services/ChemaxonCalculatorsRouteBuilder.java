@@ -378,7 +378,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         .apKa()
                         .bpKa()
                 )
-                .process(new BBBGuptaMPSProcessor());
+                .process(new BBBGuptaMPSProcessor(CommonConstants.OPTION_FILTER_MODE,
+                        CommonConstants.OPTION_FILTER_THRESHOLD));
 
         // Dynamic route that requires the chem terms configuration to be set using the
         // ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property. 
