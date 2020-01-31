@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,8 +209,8 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
             } else if (mode == Mode.Calculate) {
                 try {
                     Object result = chemJEP.evaluate(context);
-                    context.getMolecule().setPropertyObject(propName, result);
                     if (result != null) {
+                        context.getMolecule().setPropertyObject(propName, result);
                         ExecutionStats.increment(stats, getMetricsCode(),1);
                     }
                 } catch (ParseException ex) {
@@ -235,10 +235,23 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     public Map<String, Object> getResults(Molecule mol) {
         if (mode == Mode.Calculate) {
             Object value = mol.getPropertyObject(propName);
-            return Collections.singletonMap(propName, value);
-        } else {
-            return Collections.emptyMap();
+            if (value != null) {
+                if (value instanceof Double) {
+                    Double d = (Double)value;
+                    if (!d.isNaN() && !d.isInfinite()) {
+                        return Collections.singletonMap(propName, d);
+                    }
+                } else if (value instanceof Float) {
+                    Float f = (Float)value;
+                    if (!f.isNaN() && !f.isInfinite()) {
+                        return Collections.singletonMap(propName, f);
+                    }
+                } else {
+                    return Collections.singletonMap(propName, value);
+                }
+            }
         }
+        return Collections.emptyMap();
     }
 
 

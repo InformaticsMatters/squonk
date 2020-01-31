@@ -15,6 +15,7 @@
  */
 package org.squonk.chemaxon.molecule;
 
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.MoleculeObject;
 
 import java.util.HashMap;
@@ -37,12 +38,15 @@ public class BBBGuptaMPSCalculator {
     public static final String PROP_MOL_WEIGHT = "mw";
     public static final String PROP_TPSA = "tpsa";
     public static final String PROP_ROTATABLE_BOND_COUNT = "rotb";
-    public static final String PROP_PKA = "pka";
+    public static final String PROP_APKA = "apka";
+    public static final String PROP_BPKA = "bpka";
 
-    public static final String DEFAULT_RESULT_NAME = "BBB_Gupta_CXN";
+    public static final String FIELD_PKA = "pKa_BBB";
+
+    public static final String DEFAULT_RESULT_NAME = "BBB_Gupta";
 
 
-    private Map<String,String> inputNameMappings = new HashMap<>();
+    private Map<String, String> inputNameMappings = new HashMap<>();
     private final String resultPropName;
     private int errorCount = 0;
 
@@ -58,19 +62,17 @@ public class BBBGuptaMPSCalculator {
         inputNameMappings.put(PROP_MOL_WEIGHT, ChemTermsEvaluator.MOLECULAR_WEIGHT);
         inputNameMappings.put(PROP_TPSA, ChemTermsEvaluator.TPSA);
         inputNameMappings.put(PROP_ROTATABLE_BOND_COUNT, ChemTermsEvaluator.ROTATABLE_BOND_COUNT);
-        inputNameMappings.put(PROP_PKA, "pka");
+        inputNameMappings.put(PROP_APKA, ChemTermsEvaluator.APKA);
+        inputNameMappings.put(PROP_BPKA, ChemTermsEvaluator.BPKA);
 
         this.resultPropName = resultPropName;
     }
 
-    public BBBGuptaMPSCalculator(Map<String,String> inputNameMappings, String resultPropName) {
-        this(resultPropName);
-        this.inputNameMappings.putAll(inputNameMappings);
-    }
-
-    public BBBGuptaMPSCalculator(Map<String,String> inputNameMappings) {
-        this();
-        this.inputNameMappings.putAll(inputNameMappings);
+    public void updateMetadata(DatasetMetadata meta) {
+        meta.createField(FIELD_PKA, this.getClass().getName(),
+                "pKa value used for Gupta BBB calculation", Double.class);
+        meta.createField(resultPropName, this.getClass().getName(),
+                "BBB score from Gupta et.al. DOI: 10.1021/acs.jmedchem.9b01220", Double.class);
     }
 
     public Double calculate(MoleculeObject mo) {
@@ -79,7 +81,8 @@ public class BBBGuptaMPSCalculator {
 
         try {
 
-            Double pka = findInput(inputNameMappings.get(PROP_PKA), Double.class, mo);
+            Double apka = findInput(inputNameMappings.get(PROP_APKA), Double.class, mo);
+            Double bpka = findInput(inputNameMappings.get(PROP_BPKA), Double.class, mo);
             Double mw = findInput(inputNameMappings.get(PROP_MOL_WEIGHT), Double.class, mo);
             Double tpsa = findInput(inputNameMappings.get(PROP_TPSA), Double.class, mo);
             Integer aro = findInput(inputNameMappings.get(PROP_AROMATIC_RING_COUNT), Integer.class, mo);
@@ -89,10 +92,12 @@ public class BBBGuptaMPSCalculator {
             Integer hbd = findInput(inputNameMappings.get(PROP_DONOR_COUNT), Integer.class, mo);
             Integer rot = findInput(inputNameMappings.get(PROP_ROTATABLE_BOND_COUNT), Integer.class, mo);
 
-            if (pka == null || mw == null || tpsa == null || aro == null || hac == null || hba == null || hbd == null || rot == null) {
-                LOG.info(String.format("Data missing. Inputs pka=%s mw=%s tpsa=%s aro=%s hac=%s hba=%s hbd=%s rot=%s", pka, mw, tpsa, aro, hac, hba, hbd, rot));
+            if (mw == null || tpsa == null || aro == null || hac == null || hba == null || hbd == null || rot == null) {
+                LOG.info(String.format("Data missing. Inputs apka=%s bpka=%s mw=%s tpsa=%s aro=%s hac=%s hba=%s hbd=%s rot=%s", apka, bpka, mw, tpsa, aro, hac, hba, hbd, rot));
                 return null;
             }
+
+            double pka = findCorrectPKa(apka, bpka);
 
             double score_aro = calculateAROScore(aro);
             double score_hac = calculateHACScore(hac);
@@ -106,6 +111,7 @@ public class BBBGuptaMPSCalculator {
 //            LOG.info("BBB score: " + score_mps);
 
             mo.putValue(resultPropName, score_mps);
+            mo.putValue(FIELD_PKA, pka);
 
             return score_mps;
 
@@ -126,7 +132,27 @@ public class BBBGuptaMPSCalculator {
         return value;
     }
 
-    /** Score component for aromatic ring count
+    protected double findCorrectPKa(Double apka, Double bpka) {
+
+        /*
+        1.) If the molecule has basic pKa's ≥ 5, take the most basic pKa
+        2.) If molecule has no basic pKa, take the most acidic pKa ≤ 9
+        3.) If molecule has neither (neutral molecule), take the pKa that
+        would give the maximal score for pKa descriptor (pKa=0 for MPO,
+        pKa = 8.81 for BBB)
+         */
+
+        if (bpka != null && bpka >= 5d) {
+            return bpka;
+        }
+        if (bpka == null && apka != null && apka <= 9d) {
+            return apka;
+        }
+        return 8.81d;
+    }
+
+    /**
+     * Score component for aromatic ring count
      *
      * @param aro
      * @return
@@ -148,21 +174,27 @@ public class BBBGuptaMPSCalculator {
         }
     }
 
-    /** Score component for heavy atom count
+    /**
+     * Score component for heavy atom count
      *
      * @param hac
      * @return
      */
     protected double calculateHACScore(int hac) {
         if (hac > 5d && hac <= 45) {
-            return ((0.0000443d * Math.pow(hac, 3d)) - (0.004556d * Math.pow(hac, 2d)) + (0.12775d * hac) - 0.463d)
-                    / 0.624231d;
+            return (
+                    (0.0000443d * Math.pow(hac, 3d))
+                            - (0.004556d * Math.pow(hac, 2d))
+                            + (0.12775d * hac)
+                            - 0.463d
+            ) / 0.624231d;
         } else {
             return 0d;
         }
     }
 
-    /** Generate the MWHBM value which is needed in order to calculate the MWHBN score
+    /**
+     * Generate the MWHBM value which is needed in order to calculate the MWHBN score
      *
      * @param mw
      * @param hbd
@@ -170,23 +202,30 @@ public class BBBGuptaMPSCalculator {
      * @return
      */
     protected double calculateMWHBN(double mw, int hbd, int hba) {
-        return (double)hbd + (double)hba / Math.sqrt(mw);
+        return (double)(hbd + hba) / Math.sqrt(mw);
     }
 
-    /** Score component for MWHBM
+    /**
+     * Score component for MWHBM
      *
      * @param mwhbn
      * @return
      */
     protected double calculateMWHBNScore(double mwhbn) {
         if (mwhbn > 0.05d && mwhbn <= 0.45d) {
-            return ((26.733d * Math.pow(mwhbn, 3d)) - (31.495d * Math.pow(mwhbn, 2d)) + (9.5202d * mwhbn) - 0.1358d) / 0.72258d;
+            return (
+                    (26.733d * Math.pow(mwhbn, 3d))
+                            - (31.495d * Math.pow(mwhbn, 2d))
+                            + (9.5202d * mwhbn)
+                            - 0.1358d
+            ) / 0.72258d;
         } else {
             return 0d;
         }
     }
 
-    /** Score component for TPSA
+    /**
+     * Score component for TPSA
      *
      * @param tpsa
      * @return
@@ -199,15 +238,21 @@ public class BBBGuptaMPSCalculator {
         }
     }
 
-    /** Score component for pKa
+    /**
+     * Score component for pKa
      *
      * @param pka
      * @return
      */
     protected double calculatePKAScore(double pka) {
         if (pka > 3d && pka <= 11d) {
-            return (0.00045068d * Math.pow(pka, 4d)) - (0.016331d * Math.pow(pka, 3d) +
-                    (0.18618d * Math.pow(pka, 2d)) - (0.71043d * pka) + 0.8579d) / 0.597488d;
+            return (
+                    (0.00045068d * Math.pow(pka, 4d))
+                            - (0.016331d * Math.pow(pka, 3d))
+                            + (0.18618d * Math.pow(pka, 2d))
+                            - (0.71043d * pka)
+                            + 0.8579d
+            ) / 0.597488d;
         } else {
             return 0d;
         }

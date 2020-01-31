@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.chemaxon.processor.ChemAxonVerifyStructureProcessor;
+import org.squonk.camel.chemaxon.processor.calculations.BBBGuptaMPSProcessor;
 import org.squonk.camel.processor.AbstractCalculationProcessor;
 import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.processor.MpoAccumulatorProcessor;
@@ -33,9 +34,13 @@ import org.squonk.chemaxon.molecule.LazyPKaChemTermsEvaluator;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.types.MoleculeObject;
 import org.squonk.util.CommonConstants;
+import org.squonk.util.Metrics;
 import org.squonk.util.MpoFunctions;
+import org.squonk.util.StatsRecorder;
 
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
@@ -48,6 +53,8 @@ import java.util.stream.Stream;
  * @author timbo
  */
 public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
+
+    private static final Logger LOG = Logger.getLogger(ChemaxonCalculatorsRouteBuilder.class.getName());
 
     public static final String CHEMAXON_STRUCTURE_VERIFY = "direct:structure_verify";
     public static final String CHEMAXON_LOGP = "direct:logp";
@@ -368,26 +375,10 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         .molWeight()
                         .tpsa()
                         .rotatableBondCount()
-                        .addEvaluatorDefinition(new LazyPKaChemTermsEvaluator("pka_type"))
+                        .apKa()
+                        .bpKa()
                 )
-                .process((exch) -> {
-                    Message msg = exch.getIn();
-                    String propname = msg.getHeader("pka_type", String.class);
-                    String ctExpr;
-                    if ("acidic".equals(propname)) {
-                        ctExpr = ChemTermsEvaluator.APKA;
-                    } else if ("basic".equals(propname)) {
-                        ctExpr = ChemTermsEvaluator.APKA;
-                    } else {
-                        throw new IllegalStateException("Invalid pKa type: " + propname);
-                    }
-                    final BBBGuptaMPSCalculator calculator = new BBBGuptaMPSCalculator(
-                            Collections.singletonMap(BBBGuptaMPSCalculator.PROP_PKA, ctExpr));
-                    Stream<MoleculeObject> stream1 = msg.getBody(Stream.class);
-                    Stream stream2 = stream1.peek((mo) -> calculator.calculate(mo));
-
-                    exch.getIn().setBody(new MoleculeObjectDataset(stream2));
-                });
+                .process(new BBBGuptaMPSProcessor());
 
         // Dynamic route that requires the chem terms configuration to be set using the
         // ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property. 

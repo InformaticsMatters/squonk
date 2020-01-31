@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -238,7 +238,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     null),
             createServiceDescriptor(
                     "chemaxon.calculators.abbvieMps",
-                    "AbbVie MPS (CXN)",
+                    "AbbVie MPS",
                     "AbbVie MPS score using ChemAxon calculators",
                     new String[]{"abbvie", "mps", "rotatablebonds", "ringcount", "aromaticringcount", "druglike",
                             "molecularproperties", "chemaxon"},
@@ -249,14 +249,14 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     null),
             createServiceDescriptor(
                     "chemaxon.calculators.bbbGuptaMps",
-                    "BBB Gupta MPS (CXN)",
+                    "BBB Score Gupta MPS",
                     "BBB MPS score from Gupta et al. using ChemAxon calculators",
                     new String[]{"bbb", "mps", "rotatablebonds", "ringcount", "aromaticringcount", "rotatablebonds",
                             "hbond", "donors", "acceptors", "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
                     "/docs/cells/BBB%20Gupta%20MPS%20(CXN)/",
                     "bbbGuptaMps",
-                    createMpoOptionDescriptors(createChoosePKAOptionDescriptors(new ArrayList<>())).toArray(new OptionDescriptor[0]),
+                    createMpoOptionDescriptors().toArray(new OptionDescriptor[0]),
                     null)
 
 //                createServiceDescriptor(
@@ -428,14 +428,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         return list.toArray(new OptionDescriptor[0]);
     }
 
-    static private List<OptionDescriptor> createChoosePKAOptionDescriptors(List<OptionDescriptor> list) {
-        list.add(new OptionDescriptor<>(String.class, "query.pka_type", "pKa type",
-                "The type of pKa to use (acidic or basic)", Mode.User)
-                .withValues(new String[] {"acidic", "basic"}));
-
-        return list;
-    }
-
     static private List<OptionDescriptor> createMpoOptionDescriptors() {
         return createMpoOptionDescriptors(new ArrayList<OptionDescriptor>());
     }
@@ -448,7 +440,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
         return list;
     }
-
 
     private static final HttpServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
             = new HttpServiceDescriptor[]{
