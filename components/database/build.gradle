@@ -75,7 +75,7 @@ task buildDockerFile(type: Dockerfile) {
 
     workingDir("flyway-${flywayVersion}")
 
-    addFile('src/main/upgrade-postgres.sh', './')
+    addFile('src/main/upgrade-postgres${MIGRATION_SUFFIX}.sh', './')
     addFile('src/main/flyway.conf', 'conf/')
     addFile('src/main/resources/db/migration${MIGRATION_SUFFIX}/*.sql', 'sql/')
 
