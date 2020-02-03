@@ -68,23 +68,20 @@ _encryption key_.
 
 Once you've done this you can benefit from the full set of unit tests.
 
-## Running the Travis files
-Travis runs the scripts in the `scripts` directory. These scripts
-can also be run locally. So, to reproduce the Travis build commands,
-you could move to the project root and run the build script form there: -
+## The CI/CD process (Travis)
+**Do not deploy Squonk from your own (local) builds**. Always use
+images built and pushed by the CI/CD (Travis) process. Squonk is automatically
+built and (unit) tested using Travis and images pushed to Docker Hub from there.
 
-    ./scripts/build.sh
+The Travis-derived builds provide the _single point of truth_.
 
-## Validating the travis file
-If you've made changes to the `.travis.yml` file it's valuable to [validate]
-th changes before committing. With the command-line utility installed
-run: -
-
-    travis lint .travis.tml
-
->   The linter is suffering from [bugs] so, for now, ignore things like
-    **unexpected key ???, dropping**. But it can find serious flaws.
-   
+-   You must not push `latest` or officially tagged images from your
+    workstation
+-   When deploying always commit your changes (on a branch)
+    and rely on images pushed to Docker Hub by the Travis process
+    
+See the **DEV-PROCESS.md** document for further details.
+  
 ## Contributing
 Currently it is not expected that third party developers will find it
 easy to contribute to this codebase, but that will change. If you are

@@ -55,10 +55,10 @@
     result in an image build and push to Docker. For this reason, for now,
     please avoid tagging non-master branches.
 
-## Prune docker.io regularly
-1.  As each tag results in a new container image on docker.io we need
+## Prune Docker Hub regularly
+1.  As each tag results in a new container image on Docker Hub we need
     to be aware that the registry may fill up. preventing new images
-    from beign pushed. To satisfy the Docker image quota you will need
+    from being pushed. To satisfy the Docker image quota you will need
     to optionally archive and then delete old images.
 1.  **DO NOT** delete any tagged images that are expected to exist in
     current deployments.
@@ -67,13 +67,46 @@
 1.  We rely on Travis (and the project's `.travis.yml` file) to continually
     compile, test (and deploy) the application container images.
 1.  A build sequence takes approximately 15 minutes.
+1.  The CI/CD process consists of four stages: `compile`, `test`, `docker`
+    and `publish`, defined in the `.travis.yml` file.
+    1.  When the GitHub repository is tagged or if a build is taking place
+        on the master branch the `compile`, `test` and `publish` stages are
+        executed. So each tag or master build will result in a new tagged
+        or `latest` image on Docker Hub. 
+    1.  Otherwise, if the build is taking place on a branch then the
+        the `compile`, `test` and `docker` stages are executed. Images
+        on branches are not published to Docker hub (unless the branch
+        is tagged).
+1.  The CI/CD stages simply invoke the corresponding _script_ in the `scripts`
+    directory. You should be able to run these scripts, allowing you to
+    reproduce the Travis build steps locally.
 1.  When you create a development branch the tests for your branch will start.
     The CI/CD process will compile and test code as you commit your changes.
 1.  Changes on the `master` branch will result in new `:latest` container
-    images pushed to docker.io.
+    images pushed to Docker Hub.
 1.  When a branch is tagged new container images will be pushed with the
-    tag `:<tag>`.
+    corresponding `:<tag>` value.
 
+>   Travis relies on a number of _encrypted_ environment variables
+    in order to both execute the build and login and push to Docker Hub.
+    You can see these on the [Travis Settings] page for the Squonk builds.
+
+>   For example, there is a `DOCKER_USERNAME` and `DOCKER_PASSWORD`
+    (available to all branches) that is injected into the build environment,
+    relied upon by the scripts run by Travis, that allow the build
+    to interact with Docker Hub.
+
+## Validating the travis file
+If you've made changes to the `.travis.yml` file it's valuable to [validate]
+the changes before committing. With the command-line utility installed
+run: -
+
+    travis lint .travis.tml
+
+>   The linter is suffering from [bugs] so, for now, ignore things like
+    **unexpected key ???, dropping**. But it can find serious flaws.
+  
 ---
 
 [Semantic Versioning 2.0.0]: https://semver.org
+[travis settings]: https://travis-ci.org/InformaticsMatters/squonk/settings
