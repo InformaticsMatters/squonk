@@ -75,15 +75,15 @@ task buildDockerFile(type: Dockerfile) {
 
     workingDir("flyway-${flywayVersion}")
 
-    addFile('src/main/upgrade-postgres${MIGRATION_SUFFIX}.sh', './')
+    addFile('src/main/upgrade-postgres${MIGRATION_SUFFIX}.sh', './upgrade-postgres.sh')
     addFile('src/main/flyway.conf', 'conf/')
     addFile('src/main/resources/db/migration${MIGRATION_SUFFIX}/*.sql', 'sql/')
 
     runCommand('chown -R flyway.flyway /flyway')
-    runCommand('chmod +x upgrade-postgres${MIGRATION_SUFFIX}.sh')
+    runCommand('chmod +x upgrade-postgres.sh')
     runCommand('chmod +x flyway')
     user('flyway')
-    defaultCommand('./upgrade-postgres${MIGRATION_SUFFIX}.sh')
+    defaultCommand('./upgrade-postgres.sh')
 
 }
 
