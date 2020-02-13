@@ -68,23 +68,6 @@ _encryption key_.
 
 Once you've done this you can benefit from the full set of unit tests.
 
-## Running the Travis files
-Travis runs the scripts in the `scripts` directory. These scripts
-can also be run locally. So, to reproduce the Travis build commands,
-you could move to the project root and run the build script form there: -
-
-    ./scripts/build.sh
-
-## Validating the travis file
-If you've made changes to the `.travis.yml` file it's valuable to [validate]
-th changes before committing. With the command-line utility installed
-run: -
-
-    travis lint .travis.tml
-
->   The linter is suffering from [bugs] so, for now, ignore things like
-    **unexpected key ???, dropping**. But it can find serious flaws.
-   
 ## Contributing
 Currently it is not expected that third party developers will find it
 easy to contribute to this codebase, but that will change. If you are
@@ -93,10 +76,8 @@ interested in using or contributing contact Tim Dudgeon
 
 ---
 
-[bugs]: https://github.com/travis-ci/travis.rb/issues/571
 [ChemAxon docs]: https://docs.chemaxon.com/display/docs/Public+Repository#PublicRepository-HowtoCongfigureYourProject
 [Pipelines repository]: https://github.com/InformaticsMatters/pipelines
 [RDKit docs]: http://rdkit.org/docs/Install.html#building-from-source
 [Squonk]: (http://squonk.it)
 [Travis]: https://travis-ci.org/InformaticsMatters/squonk
-[Validate]: https://support.travis-ci.com/hc/en-us/articles/115002904174-Validating-travis-yml-files
