@@ -55,7 +55,7 @@ then
   docker tag squonk/cellexecutor:"$SQUONK_IMAGE_TAG" squonk/cellexecutor:"$LATEST_TAG"
   docker tag squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG" squonk/jobexecutor-keycloak:"$LATEST_TAG"
   docker tag squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG" squonk/chemcentral-loader:"$LATEST_TAG"
-  docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" tag squonk/flyway:"$LATEST_TAG"
+  docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" squonk/flyway:"$LATEST_TAG"
 
   docker push squonk/chemservices-basic:"$LATEST_TAG"
   docker push squonk/chemcentral-search:"$LATEST_TAG"
