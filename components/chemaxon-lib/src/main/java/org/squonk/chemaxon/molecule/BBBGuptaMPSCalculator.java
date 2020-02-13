@@ -150,7 +150,8 @@ public class BBBGuptaMPSCalculator {
         if (bpka != null && bpka >= 5d) {
             return bpka;
         }
-        if (bpka == null && apka != null && apka <= 9d) {
+        // a check if bpka was null was removed from the next line at Sygnature's request
+        if (apka != null && apka <= 9d) {
             return apka;
         }
         return 8.81d;
