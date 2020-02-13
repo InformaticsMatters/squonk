@@ -48,7 +48,7 @@ docker tag squonk/coreservices:"$SQUONK_IMAGE_TAG" squonk/coreservices:latest
 docker tag squonk/cellexecutor:"$SQUONK_IMAGE_TAG" squonk/cellexecutor:latest
 docker tag squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG" squonk/jobexecutor-keycloak:latest
 docker tag squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG" squonk/chemcentral-loader:latest
-docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" tag squonk/flyway:latest
+docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" squonk/flyway:latest
 
 docker push squonk/chemservices-basic:latest
 docker push squonk/chemcentral-search:latest
