@@ -49,7 +49,7 @@ cache:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
 
-matrix:
+jobs:
   include:
 
   # Compile-stage jobs...
@@ -73,5 +73,16 @@ matrix:
   # Publish-stage jobs...
 
   - stage: publish
-    name: Docker Build and Push
-    script: scripts/publish.sh
+    name: Docker Build and Push (master/latest)
+    script: scripts/publish-latest.sh
+    if: tag IS NOT present AND branch == master
+
+  - stage: publish
+    name: Docker Build and Push (master/tag)
+    script: scripts/publish-tag-master.sh
+    if: tag IS present AND branch == master
+
+  - stage: publish
+    name: Docker Build and Push (branch/tag)
+    script: scripts/publish-tag-branch.sh
+    if: tag IS present AND branch != master
