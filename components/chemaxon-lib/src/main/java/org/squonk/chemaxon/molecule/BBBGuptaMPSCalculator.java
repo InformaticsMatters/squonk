@@ -17,6 +17,7 @@ package org.squonk.chemaxon.molecule;
 
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.MoleculeObject;
+import org.squonk.util.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -102,7 +103,14 @@ public class BBBGuptaMPSCalculator {
                 return null;
             }
 
+            LOG.finer(String.format("Inputs are: apka=%s, bpka=%s, mw=%s, tpsa=%s, aro=%s, hac=%s, hba=%s, hbd=%s, rot=%s",
+                    apka, bpka, mw, tpsa, aro, hac, hba, hbd, rot));
+
             double pka = findCorrectPKa(apka, bpka);
+
+            mw = Utils.roundToSignificantFigures(mw, 4);
+            tpsa = Utils.roundToSignificantFigures(tpsa, 4);
+            pka = Utils.roundToSignificantFigures(pka, 4);
 
             double score_aro = calculateAROScore(aro);
             double score_hac = calculateHACScore(hac);
@@ -111,9 +119,11 @@ public class BBBGuptaMPSCalculator {
             double score_tpsa = calculateTPSAScore(tpsa);
             double score_pka = calculatePKAScore(pka);
 
-            double score_mps = score_aro + score_hac + (1.5d * score_mwhbn) + (2d * score_tpsa) + (0.5d * score_pka);
 
-//            LOG.info("BBB score: " + score_mps);
+            double score_mps = Utils.roundToSignificantFigures(
+                    score_aro + score_hac + (1.5d * score_mwhbn) + (2d * score_tpsa) + (0.5d * score_pka), 4);
+            LOG.finer(String.format("Scores are: aro=%s, hac=%s, mwhbn=%s, tpsa=%s, pka=%s, bbb=%s",
+                    score_aro, score_hac, score_mwhbn, score_tpsa, score_pka, score_mps));
 
             mo.putValue(resultPropName, score_mps);
             mo.putValue(FIELD_PKA, pka);
@@ -187,11 +197,11 @@ public class BBBGuptaMPSCalculator {
      * @return
      */
     protected double calculateHACScore(int hac) {
-        if (hac > 5d && hac <= 45) {
+        if (hac > 5 && hac <= 45) {
             return (
                     (0.0000443d * Math.pow(hac, 3d))
                             - (0.004556d * Math.pow(hac, 2d))
-                            + (0.12775d * hac)
+                            + (0.12775d * (double)hac)
                             - 0.463d
             ) / 0.624231d;
         } else {
@@ -238,7 +248,7 @@ public class BBBGuptaMPSCalculator {
      */
     protected double calculateTPSAScore(double tpsa) {
         if (tpsa > 0d && tpsa <= 120d) {
-            return ((-0.0067d * tpsa) + 0.9598) / 0.9598d;
+            return ((-0.0067d * tpsa) + 0.9598d) / 0.9598d;
         } else {
             return 0d;
         }
