@@ -1,9 +1,10 @@
 # Squonk main repository
 
-![GitHub](https://img.shields.io/github/license/informaticsmatters/squonk)
 [![Build Status](https://travis-ci.org/InformaticsMatters/squonk.svg?branch=master)](https://travis-ci.org/InformaticsMatters/squonk)
-![Codacy grade](https://img.shields.io/codacy/grade/d7ff748f71f04962b4131975a14864d3)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/informaticsmatters/squonk)
+
+![GitHub](https://img.shields.io/github/license/informaticsmatters/squonk)
+![Codacy grade](https://img.shields.io/codacy/grade/d7ff748f71f04962b4131975a14864d3)
 
 This is the main repository for [Squonk], both the **Squonk
 Platform** and the **Squonk Computational Notebook**.
