@@ -17,31 +17,22 @@
 package org.squonk.chemaxon.services;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
-
-import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.chemaxon.processor.ChemAxonVerifyStructureProcessor;
 import org.squonk.camel.chemaxon.processor.calculations.BBBGuptaMPSProcessor;
 import org.squonk.camel.processor.AbstractCalculationProcessor;
-import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.processor.MpoAccumulatorProcessor;
-import org.squonk.chemaxon.molecule.BBBGuptaMPSCalculator;
+import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
-import org.squonk.chemaxon.molecule.LazyPKaChemTermsEvaluator;
-import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.types.MoleculeObject;
 import org.squonk.util.CommonConstants;
-import org.squonk.util.Metrics;
 import org.squonk.util.MpoFunctions;
-import org.squonk.util.StatsRecorder;
+import org.squonk.util.Utils;
 
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  * These are routes that provide basic property calculation services. The input to the route is a
@@ -356,7 +347,9 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                             LOG.fine("Values not present");
                             // do nothing
                         } else {
-                            double result = Math.abs(logd - 3) + (double)nar + (double)rotb;
+                            double result = Utils.roundToSignificantFigures(
+                                    Math.abs(logd - 3d) + (double)nar + (double)rotb,
+                                    4);
                             mo.putValue(calculatedPropertyName, result);
                         }
                     }

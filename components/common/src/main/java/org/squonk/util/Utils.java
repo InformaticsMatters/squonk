@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,11 @@
 
 package org.squonk.util;
 
-import org.squonk.io.SquonkDataSource;
-import org.squonk.io.StringDataSource;
-import org.squonk.types.StreamType;
-
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -124,11 +119,12 @@ public class Utils {
         }
     }
 
-    /** Instantiate an instance of a class by using a constructor for the specified types.
+    /**
+     * Instantiate an instance of a class by using a constructor for the specified types.
      * If no such constructor is defined null is returned. If the constructor exists but instantiation of it fails then
      * the exception associated with the failure is thrown
      *
-     * @param type The class to instantiate
+     * @param type            The class to instantiate
      * @param constructorArgs The constructor arguments to look for (in order). Values must not be null.
      * @param <T>
      * @return
@@ -145,6 +141,19 @@ public class Utils {
             return null;
         }
         return constructor.newInstance(constructorArgs);
+    }
+
+
+    /** Round the number to the specified number of significant figures
+     *
+     * @param value
+     * @param significant
+     * @return
+     */
+    public static double roundToSignificantFigures(double value, int significant) {
+        MathContext mathContext = new MathContext(significant, RoundingMode.HALF_UP);
+        BigDecimal bigDecimal = new BigDecimal(value, mathContext);
+        return bigDecimal.doubleValue();
     }
 
 }
