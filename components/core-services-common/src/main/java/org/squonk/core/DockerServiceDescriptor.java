@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,12 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
     /**
      * The name of the docker image to use
      */
-    private final String imageName;
+    private String imageName;
+
+    /**
+     * The image pull secret (optional)
+     */
+    private String imagePullSecret;
 
     /**The command to execute
      *
@@ -89,6 +94,7 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
      * @param thinDescriptors   Descriptors for thin execution
      * @param executorClassName The class name of the executor
      * @param imageName         Docker image to use if not overriden by one of the user defined options (e.g. if there is a choice of images to use).
+     * @param imagePullSecret   The name of a secret required to pull the Docker image, empty if not required (used for Kubernetes deployments).
      * @param command           The command to run when executing the container.
      * @param volumes           Volumes that need to be mounted. Primarily the volume that contains the scripts to execute. The key is the directory to
      *                          mount (relative to the configured directory that contains mountable volumes), the value is where to mount it in
@@ -113,6 +119,7 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
             // these are specific to docker execution
             String executorClassName,
             String imageName,
+            String imagePullSecret,
             String command,
             Map<String, String> volumes) {
 
@@ -121,6 +128,7 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
                 thinDescriptors, inputRoutes, outputRoutes);
 
         this.imageName = imageName;
+        this.imagePullSecret = imagePullSecret;
         this.command = command;
         this.volumes = volumes;
     }
@@ -139,12 +147,16 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
             IODescriptor[] inputDescriptors,
             IODescriptor[] outputDescriptors
             ) {
-        this(id, name, null, null, null, null, null, null, inputDescriptors, null, outputDescriptors, null, null, null, null, null, null, null);
+        this(id, name, null, null, null, null, null, null, inputDescriptors, null, outputDescriptors, null, null, null, null, null, null, null, null);
     }
 
 
     public String getImageName() {
         return imageName;
+    }
+
+    public String getImagePullSecret() {
+        return imagePullSecret;
     }
 
     public String getCommand() {
@@ -154,4 +166,13 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
     public Map<String, String> getVolumes() {
         return volumes;
     }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public void setImagePullSecret(String imagePullSecret) {
+        this.imagePullSecret = imagePullSecret;
+    }
+
 }

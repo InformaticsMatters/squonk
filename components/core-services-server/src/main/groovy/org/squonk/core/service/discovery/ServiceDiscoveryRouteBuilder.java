@@ -116,6 +116,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
          * The execution endpoint of the contained ServiceDescriptors will be expanded using the baseUrl property of the
          * ServiceDescriptorSet if it does not already start with 'http'.
          *
+         * You should only find this employed for 'http' types.
+         * 'docker' and 'nextflow' descriptors will normally be processed
+         * by the ROUTE_POST_SD_SINGLE method.
          */
         from(ROUTE_POST_SD_SET)
                 .log(LoggingLevel.DEBUG, ROUTE_POST_SD_SET)
@@ -158,6 +161,47 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     ServiceDescriptor sd = readMultipartServiceDescriptor(exch.getIn());
                     if (sd == null) {
                         throw new RuntimeException("Failed to read service descriptor");
+                    }
+
+                    // Is there a pull secret header? ('Image-Pull-Secret')
+                    // If so the service descriptor can support a pull secret and so we
+                    // insert the supplied image pull secret into the corresponding descriptor class.
+                    String imagePullSecret = exch.getIn().getHeader("Image-Pull-Secret", String.class);
+                    LOG.info("imagePullSecret is " + imagePullSecret);
+                    if (imagePullSecret != null && imagePullSecret.length() > 0) {
+                        if (baseUrl.startsWith("docker")) {
+                            LOG.info("Setting Docker imagePullSecret to " + imagePullSecret);
+                            ((DockerServiceDescriptor) sd).setImagePullSecret(imagePullSecret);
+                        }
+                    }
+                    // Is there a registry header ('Image-Registry')?
+                    // If so prefix the image name with it.
+                    String imageRegistry = exch.getIn().getHeader("Image-Registry", String.class);
+                    if (imageRegistry != null && imageRegistry.length() > 0) {
+                        if (baseUrl.startsWith("docker")) {
+                            String imageName = ((DockerServiceDescriptor) sd).getImageName();
+                            imageName = imageRegistry + "/" + imageName;
+                            LOG.info("Adding Registry to imageName " + imageName);
+                            ((DockerServiceDescriptor) sd).setImageName(imageName);
+                        }
+                    }
+                    // Is there an image tag? ('Image-Tag')
+                    // If so, insert the provided tag where one does not already exist.
+                    // If the image has a tag then leave it alone - the user
+                    // has clearly declared that they want a  specific image
+                    // for this service.
+                    String imageTag = exch.getIn().getHeader("Image-Tag", String.class);
+                    if (imageTag != null && imageTag.length() > 0) {
+                        if (baseUrl.startsWith("docker")) {
+                            String imageName = ((DockerServiceDescriptor) sd).getImageName();
+                            if (imageName.indexOf(':') == -1) {
+                                // There is no ':', so therefore no tag.
+                                // Append the supplied tag to the image name
+                                imageName += ":" + imageTag;
+                                LOG.info("Added tag to imageName " + imageName);
+                                ((DockerServiceDescriptor) sd).setImageName(imageName);
+                            }
+                        }
                     }
 
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());

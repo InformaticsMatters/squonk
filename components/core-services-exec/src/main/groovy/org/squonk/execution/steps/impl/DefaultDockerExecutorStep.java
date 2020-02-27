@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,9 +75,17 @@ public class DefaultDockerExecutorStep extends AbstractContainerStep {
         // screen.py '${query}' ${threshold} --d ${descriptor}
         String expandedCommand = expandCommand(command, options);
 
-        ContainerRunner containerRunner = createContainerRunner(image);
+        // Get the (Kubernetes) image pull secret name
+        // (defined and non-empty if the image needs authentication).
+        // Normally required when the image is located in a private Docker regsitry.
+        // This will either be null or an empty string if it's not required.
+        String imagePullSecret = descriptor.getImagePullSecret();
+        LOG.info("Docker image: " + image + " imagePullSecret: " + imagePullSecret);
+
+        ContainerRunner containerRunner = createContainerRunner(image, imagePullSecret);
         containerRunner.init();
-        LOG.info("Docker image: " + image + ", hostWorkDir: " + containerRunner.getHostWorkDir() + ", command: " + expandedCommand);
+        LOG.info("Docker hostWorkDir: " + containerRunner.getHostWorkDir() +
+                 " command: " + expandedCommand);
 
         // add the resources
         if (descriptor.getVolumes() != null) {

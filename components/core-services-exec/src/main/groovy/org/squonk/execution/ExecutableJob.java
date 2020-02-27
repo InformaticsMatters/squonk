@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,12 +200,27 @@ public class ExecutableJob {
     }
 
     protected ContainerRunner createContainerRunner(String image) throws IOException {
-        return createContainerRunner(image, null);
+
+        LOG.info("Creating container runner. image=" + image);
+        return createContainerRunner(image, null, null);
+
     }
 
-    protected ContainerRunner createContainerRunner(String image, String workdir) throws IOException {
+    protected ContainerRunner createContainerRunner(String image, String imagePullSecret) throws IOException {
+
+        LOG.info("Creating container runner. image=" + image +
+                 " imagePullSecret=" + imagePullSecret);
+        return createContainerRunner(image, imagePullSecret, null);
+
+    }
+
+    protected ContainerRunner createContainerRunner(String image, String imagePullSecret, String workdir) throws IOException {
         // The CONTAINER_RUNNER_TYPE (environment variable) defines what
         // type of ContainerRunner we produce...
+
+        LOG.info("Creating container runner. image=" + image +
+                 " imagePullSecret=" + imagePullSecret +
+                 " workdir='" + workdir + "'");
 
         ContainerRunner runner = null;
         if (CONTAINER_RUNNER_TYPE.equals("docker")) {
@@ -216,7 +231,7 @@ public class ExecutableJob {
         } else if (CONTAINER_RUNNER_TYPE.equals("openshift")) {
 
             LOG.fine("Creating OpenShiftRunner instance...");
-            runner = new OpenShiftRunner(image, workdir, workdir, jobId);
+            runner = new OpenShiftRunner(image, imagePullSecret, workdir, workdir, jobId);
 
         } else {
             throw new IOException("Unsupported ContainerRunner type: '" + CONTAINER_RUNNER_TYPE + "'");
