@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,13 @@ task buildDockerFile(type: Dockerfile) {
     destFile = project.file('build/Dockerfile')
     from "openjdk:8-jre"
 
+    arg('MIGRATION_SUFFIX')
+
     label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
     label(['commit-hash': "${imageCommitHash}"])
+
+    runCommand('useradd -d /flyway -s /bin/bash flyway')
+    workingDir('/flyway')
 
     runCommand("""wget -q https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flywayVersion}/flyway-commandline-${flywayVersion}.zip &&\
  unzip flyway-commandline-${flywayVersion}.zip &&\
@@ -68,21 +73,40 @@ task buildDockerFile(type: Dockerfile) {
  rm ../conf/flyway.conf
 """)
 
-    workingDir("/flyway-${flywayVersion}")
+    workingDir("flyway-${flywayVersion}")
 
-    addFile("src/main/upgrade-postgres.sh", "./")
-    addFile("src/main/flyway.conf", "conf/")
-    addFile("src/main/resources/db/migration/*.sql", "sql/")
+    addFile('src/main/upgrade-postgres${MIGRATION_SUFFIX}.sh', './upgrade-postgres.sh')
+    addFile('src/main/flyway.conf', 'conf/')
+    addFile('src/main/resources/db/migration${MIGRATION_SUFFIX}/*.sql', 'sql/')
 
-    entryPoint("sh", "upgrade-postgres.sh")
+    runCommand('chown -R flyway.flyway /flyway')
+    runCommand('chmod +x upgrade-postgres.sh')
+    runCommand('chmod +x flyway')
+    user('flyway')
+    defaultCommand('./upgrade-postgres.sh')
+
 }
 
 task buildDockerImage(type: DockerBuildImage) {
 
+    description = 'Docker image for pre-Kubernetes deployments (squonk user)'
     dependsOn = ['buildDockerFile']
 
     inputDir = projectDir
     dockerFile = buildDockerFile.destFile
     tag = "squonk/flyway:${dockerImageTag}"
+    buildArgs = ['MIGRATION_SUFFIX': '']
+
 }
 
+task buildDockerImage2(type: DockerBuildImage) {
+
+    description = 'Docker image for Kubernetes deployments'
+    dependsOn = ['buildDockerFile']
+
+    inputDir = projectDir
+    dockerFile = buildDockerFile.destFile
+    tag = "squonk/flyway-2:${dockerImageTag}"
+    buildArgs = ['MIGRATION_SUFFIX': '-2']
+
+}

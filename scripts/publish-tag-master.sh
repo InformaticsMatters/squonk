@@ -38,6 +38,7 @@ docker push squonk/cellexecutor:"$SQUONK_IMAGE_TAG"
 docker push squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG"
 docker push squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG"
 docker push squonk/flyway:"$SQUONK_IMAGE_TAG"
+docker push squonk/flyway-2:"$SQUONK_IMAGE_TAG"
 
 # We're invoked on the `master` branch (or we should habve been)
 # so also publish 'latest' (basically re-tag the image and push)...
@@ -49,6 +50,7 @@ docker tag squonk/cellexecutor:"$SQUONK_IMAGE_TAG" squonk/cellexecutor:latest
 docker tag squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG" squonk/jobexecutor-keycloak:latest
 docker tag squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG" squonk/chemcentral-loader:latest
 docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" squonk/flyway:latest
+docker tag squonk/flyway-2:"$SQUONK_IMAGE_TAG" squonk/flyway-2:latest
 
 docker push squonk/chemservices-basic:latest
 docker push squonk/chemcentral-search:latest
@@ -57,5 +59,6 @@ docker push squonk/cellexecutor:latest
 docker push squonk/jobexecutor-keycloak:latest
 docker push squonk/chemcentral-loader:latest
 docker push squonk/flyway:latest
+docker push squonk/flyway-2:latest
 
 popd || exit

@@ -14,18 +14,22 @@ services:
 - docker
 
 stages:
+
   # The 'compile' stage
   # - Compiles the code (a quick initial stage).
 - name: compile
-  # The 'build' stage
-  # - Compiles the code and also used to run unit tests.
+
+  # The 'test' stage
+  # - Compiles the code and also runs unit tests.
 - name: test
+
   # The 'docker' stage
   # - Assembles docker images to verify that they can be constructed.
   #   It does not push these images - it's simply an assembly-check.
   #   We do this if we're not the result of a tag and we're not on master.
 - name: docker
   if: tag IS NOT present AND branch != master
+
   # The 'publish' stage
   # - Assembles docker images and pushes the resultant images to Docker Hub.
   #   We execute the 'publish' stage and always publish an image

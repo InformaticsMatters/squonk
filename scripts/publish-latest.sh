@@ -36,5 +36,6 @@ docker push squonk/cellexecutor:"$SQUONK_IMAGE_TAG"
 docker push squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG"
 docker push squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG"
 docker push squonk/flyway:"$SQUONK_IMAGE_TAG"
+docker push squonk/flyway-2:"$SQUONK_IMAGE_TAG"
 
 popd || exit
