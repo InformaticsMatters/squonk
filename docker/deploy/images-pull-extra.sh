@@ -1,10 +1,10 @@
 #!/bin/bash
 
-docker pull informaticsmatters/groovy
+docker pull informaticsmatters/squonk-groovy:1.0.0
 
 docker pull rabbitmq:3-management
 docker pull nginx:1.13
-docker pull jboss/keycloak-postgres:2.1.0.Final
+docker pull jboss/keycloak:4.8.3.Final
 
 docker pull informaticsmatters/rdkit_cartridge:Release_2017_09_2
 docker pull informaticsmatters/rdkit:latest

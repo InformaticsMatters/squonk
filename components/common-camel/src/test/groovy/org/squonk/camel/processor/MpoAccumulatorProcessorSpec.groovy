@@ -25,8 +25,10 @@ import static org.squonk.camel.processor.MpoAccumulatorProcessor.AccumulatorStra
 
 class MpoAccumulatorProcessorSpec extends Specification {
 
+    private static final String PROP_NAME = "name"
+
     static MpoAccumulatorProcessor createProcessor(MpoAccumulatorProcessor.AccumulatorStrategy mode, boolean allowNullValues) {
-        return new MpoAccumulatorProcessor("name", "desc", Float.class, "", "", mode, allowNullValues)
+        return new MpoAccumulatorProcessor(PROP_NAME, "desc", Float.class, "", "", mode, allowNullValues)
                 .addHumpFunction("A", MpoFunctions.createRampFunction(0d, 1d, 3d, 5d)) // -> 0.5
                 .addHumpFunction("B", MpoFunctions.createRampFunction(0d, 1d, 3d, 5d)) // -> 0
                 .addHumpFunction("C", MpoFunctions.createRampFunction(0d, 1d, 3d, 5d)) // -> 0
@@ -46,7 +48,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
         p.processMoleculeObject(mo)
 
         then:
-        mo.getValue("name") == 1.5d
+        mo.getValue(PROP_NAME) == 1.5d
     }
 
     void "test mean"() {
@@ -62,7 +64,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
         p.processMoleculeObject(mo)
 
         then:
-        mo.getValue("name") == 1.5d / 4d
+        mo.getValue(PROP_NAME) == 1.5d / 4d
 
     }
 
@@ -78,7 +80,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
         p.processMoleculeObject(mo)
 
         then:
-        mo.getValue("name") == null
+        mo.getValue(PROP_NAME) == null
     }
 
     void "test with null allowed"() {
@@ -93,7 +95,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
         p.processMoleculeObject(mo)
 
         then:
-        mo.getValue("name") == 0.5d
+        mo.getValue(PROP_NAME) == 0.5d
     }
 
     void "test filter all out of range"() {
@@ -111,7 +113,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
 
         then:
         result == true
-        mo.getValue("name") == 1.5d
+        mo.getValue(PROP_NAME) == 1.5d
     }
 
     void "test filter pass in range"() {
@@ -129,7 +131,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
 
         then:
         result == true
-        mo.getValue("name") == 1.5d
+        mo.getValue(PROP_NAME) == 1.5d
     }
 
     void "test filter pass out of range"() {
@@ -215,7 +217,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
 
         then:
         result == true
-        mo.getValue("name") == 1.5d
+        mo.getValue(PROP_NAME) == 1.5d
     }
 
     void "test filter fail out of range max only"() {
@@ -233,7 +235,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
 
         then:
         result == true
-        mo.getValue("name") == 1.5d
+        mo.getValue(PROP_NAME) == 1.5d
     }
 
     void "test filter fail out of range min only"() {
@@ -251,7 +253,7 @@ class MpoAccumulatorProcessorSpec extends Specification {
 
         then:
         result == true
-        mo.getValue("name") == 1.5d
+        mo.getValue(PROP_NAME) == 1.5d
     }
 
 }

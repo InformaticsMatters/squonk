@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package org.squonk.camel.processor;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.NumberRange;
 import org.squonk.util.CommonConstants;
@@ -117,21 +119,8 @@ public class MpoAccumulatorProcessor implements Processor {
         });
 
         // apply filter if necessary
-        if (filterModeProperty != null && filterRangeProperty != null) {
-            final String filterMode = exch.getIn().getHeader(filterModeProperty, String.class);
-            final String filterRange = exch.getIn().getHeader(filterRangeProperty, String.class);
-            if (filterMode != null && !CommonConstants.VALUE_INCLUDE_ALL.equals(filterMode)) {
-                if (filterMode != null && filterRange != null) {
-                    NumberRange.Double range = new NumberRange.Double(filterRange);
-                    final Double minScore = range.getMinValue() == null ? null : range.getMinValue().doubleValue();
-                    final Double maxScore = range.getMaxValue() == null ? null : range.getMaxValue().doubleValue();
-                    LOG.info("Filter: " + filterMode + " [" + minScore + " - " + maxScore + "]");
-                    if (minScore != null || maxScore != null) {
-                        stream = stream.filter((MoleculeObject mo) -> filter(mo, filterMode, minScore, maxScore));
-                    }
-                }
-            }
-        }
+        stream = applyFilters(exch.getIn(), stream, accumulatedPropertyName, filterModeProperty, filterRangeProperty);
+
         // convert from double to float if needed
         if (accumulatedPropertyType == Float.class) {
             stream = stream.peek((mo) -> {
@@ -160,8 +149,39 @@ public class MpoAccumulatorProcessor implements Processor {
         exch.getOut().setBody(neu);
     }
 
+    public static Stream applyFilters(
+            Message msg,
+            Stream<MoleculeObject> stream,
+            String propName,
+            String filterModeProperty,
+            String filterRangeProperty) {
+
+        Stream result = stream;
+        if (filterModeProperty != null && filterRangeProperty != null) {
+            final String filterMode = msg.getHeader(filterModeProperty, String.class);
+            final String filterRange = msg.getHeader(filterRangeProperty, String.class);
+            if (filterMode != null && !CommonConstants.VALUE_INCLUDE_ALL.equals(filterMode)) {
+                if (filterMode != null && filterRange != null) {
+                    NumberRange.Double range = new NumberRange.Double(filterRange);
+                    final Double minScore = range.getMinValue() == null ? null : range.getMinValue().doubleValue();
+                    final Double maxScore = range.getMaxValue() == null ? null : range.getMaxValue().doubleValue();
+                    LOG.info("Filter " + propName + " using " + filterMode + " [" + minScore + " - " + maxScore + "]");
+                    if (minScore != null || maxScore != null) {
+                        result = stream.filter((MoleculeObject mo) -> filter(mo, propName, filterMode, minScore, maxScore));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     protected boolean filter(MoleculeObject mo, String filterMode, Double minScore, Double maxScore) {
-        Double result = mo.getValue(accumulatedPropertyName, Double.class);
+        return filter(mo, accumulatedPropertyName, filterMode, minScore, maxScore);
+    }
+
+    public static boolean filter(MoleculeObject mo, String propName, String filterMode, Double minScore, Double maxScore) {
+
+        Double result = mo.getValue(propName, Double.class);
         if (filterMode == null || CommonConstants.VALUE_INCLUDE_ALL.equals(filterMode)) {
             return true;
         } else {

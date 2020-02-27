@@ -21,7 +21,7 @@ import spock.lang.Specification
 /**
  * Created by timbo on 05/05/17.
  */
-class UtilTest extends Specification  {
+class UtilsTest extends Specification  {
 
     void "safeEqualsIncludeNull"() {
 
@@ -48,6 +48,23 @@ class UtilTest extends Specification  {
         where:
         type | argType | value
         InputStreamReader.class | InputStream.class | bais
+
+    }
+
+
+    void "roundToSignificantFigures"() {
+
+        expect:
+        Utils.roundToSignificantFigures(a, b) == result
+
+        where:
+        a            | b   | result
+        1.23456789d  | 3i  | 1.23d
+        1.23456789d  | 4i  | 1.235d
+        1.23456789d  | 5i  | 1.2346d
+        1.23456789d  | 6i  | 1.23457d
+        1.23456789d  | 7i  | 1.234568d
+        1.2d         | 4i  | 1.2d
 
     }
 }

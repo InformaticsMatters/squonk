@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.squonk.chemaxon.services;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
@@ -226,17 +224,39 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "/docs/cells/CNS%20MPO%20(CXN)/",
                     "cnsMpo",
-                    createMpoOptionDescriptors(),
+                    createMpoOptionDescriptors().toArray(new OptionDescriptor[0]),
                     null),
             createServiceDescriptor(
                     "chemaxon.calculators.kidsMpo",
                     "KiDS MPO (CXN)",
                     "KiDS MPO score using ChemAxon calculators",
-                    new String[]{"kids", "mpo", "hbond", "donors", "tpsa", "rotatablebonds", "atomcount", "ringcount", "molecularproperties", "chemaxon"},
+                    new String[]{"kids", "mpo", "hbond", "donors", "tpsa", "rotatablebonds", "atomcount", "ringcount", "aromaticringcount", "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
                     "/docs/cells/KiDS%20MPO%20(CXN)/",
                     "kidsMpo",
-                    createMpoOptionDescriptors(),
+                    createMpoOptionDescriptors().toArray(new OptionDescriptor[0]),
+                    null),
+            createServiceDescriptor(
+                    "chemaxon.calculators.abbvieMps",
+                    "AbbVie MPS",
+                    "AbbVie MPS score using ChemAxon calculators",
+                    new String[]{"abbvie", "mps", "rotatablebonds", "ringcount", "aromaticringcount", "druglike",
+                            "molecularproperties", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    "/docs/cells/AbbVie%20MPS%20(CXN)/",
+                    "abbvieMps",
+                    createMpoOptionDescriptors().toArray(new OptionDescriptor[0]),
+                    null),
+            createServiceDescriptor(
+                    "chemaxon.calculators.bbbGuptaMps",
+                    "BBB Score Gupta MPS",
+                    "BBB MPS score from Gupta et al. using ChemAxon calculators",
+                    new String[]{"bbb", "mps", "rotatablebonds", "ringcount", "aromaticringcount", "rotatablebonds",
+                            "hbond", "donors", "acceptors", "molecularproperties", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    "/docs/cells/BBB%20Gupta%20MPS%20(CXN)/",
+                    "bbbGuptaMps",
+                    createMpoOptionDescriptors().toArray(new OptionDescriptor[0]),
                     null)
 
 //                createServiceDescriptor(
@@ -408,17 +428,18 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         return list.toArray(new OptionDescriptor[0]);
     }
 
+    static private List<OptionDescriptor> createMpoOptionDescriptors() {
+        return createMpoOptionDescriptors(new ArrayList<OptionDescriptor>());
+    }
 
-    static private OptionDescriptor[] createMpoOptionDescriptors() {
-        List<OptionDescriptor> list = new ArrayList<>();
+    static private List<OptionDescriptor> createMpoOptionDescriptors(List<OptionDescriptor> list) {
 
         list.add(OptionDescriptor.FILTER_MODE_ALL);
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Filter range",
                 "Range of MPO scores to accept", Mode.User));
 
-        return list.toArray(new OptionDescriptor[0]);
+        return list;
     }
-
 
     private static final HttpServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
             = new HttpServiceDescriptor[]{
@@ -615,6 +636,16 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .post("kidsMpo").description("Generate the KiDS MPO score for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_KIDS_MPO, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("abbvieMps").description("Generate the Abbvie MPO score for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ABBVIE_MPS, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("bbbGuptaMps").description("Generate the Gutpa et a. BBB MPO score for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_BBB_GUPTA_MPS, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("chemTerms").description("Calculate a chemical terms expression for the supplied MoleculeObjects")

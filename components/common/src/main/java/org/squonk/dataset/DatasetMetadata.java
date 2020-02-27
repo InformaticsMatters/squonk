@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -340,7 +340,7 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable, Clo
         handleMerge(properties, propName, value);
     }
 
-    /** Append these properties assuming the value isa  new property and might need formatting
+    /** Append these properties assuming the value is a new property and might need formatting
      *
      * @param propName
      * @param value

@@ -13,19 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.squonk.chemaxon.molecule
 
-package org.squonk.util;
+import spock.lang.Specification
 
-import java.util.Map;
+class LazyPKaChemTermsEvaluatorSpec extends Specification {
 
-/** Interface to allow a callback to collect results.
- * This class needs a better home, but right now its only used from the chemaxon-camel
- * module so it can stay there until its needed elsewhere.
- *
- * @author timbo
- */
-public interface ResultExtractor<T> {
-    
-    public Map<String, Object> extractResults(T from);
-    
+    void "choose acidic"() {
+
+        def lazy = new LazyPKaChemTermsEvaluator("fieldname")
+
+        when:
+        def actual = lazy.init(["fieldname": "acidic"])
+
+        then:
+        actual.chemTermsFunction == "acidicpKa('1')"
+    }
+
+    void "choose basic"() {
+
+        def lazy = new LazyPKaChemTermsEvaluator("fieldname")
+
+        when:
+        def actual = lazy.init(["fieldname": "basic"])
+
+        then:
+        actual.chemTermsFunction == "basicpKa('1')"
+    }
 }

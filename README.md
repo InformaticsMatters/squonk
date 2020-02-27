@@ -1,9 +1,10 @@
 # Squonk main repository
 
-![GitHub](https://img.shields.io/github/license/informaticsmatters/squonk)
 [![Build Status](https://travis-ci.org/InformaticsMatters/squonk.svg?branch=master)](https://travis-ci.org/InformaticsMatters/squonk)
-![Codacy grade](https://img.shields.io/codacy/grade/d7ff748f71f04962b4131975a14864d3)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/informaticsmatters/squonk)
+
+![GitHub](https://img.shields.io/github/license/informaticsmatters/squonk)
+![Codacy grade](https://img.shields.io/codacy/grade/d7ff748f71f04962b4131975a14864d3)
 
 This is the main repository for [Squonk], both the **Squonk
 Platform** and the **Squonk Computational Notebook**.
@@ -68,20 +69,6 @@ _encryption key_.
 
 Once you've done this you can benefit from the full set of unit tests.
 
-## The CI/CD process (Travis)
-**Do not deploy Squonk from your own (local) builds**. Always use
-images built and pushed by the CI/CD (Travis) process. Squonk is automatically
-built and (unit) tested using Travis and images pushed to Docker Hub from there.
-
-The Travis-derived builds provide the _single point of truth_.
-
--   You must not push `latest` or officially tagged images from your
-    workstation
--   When deploying always commit your changes (on a branch)
-    and rely on images pushed to Docker Hub by the Travis process
-    
-See the **DEV-PROCESS.md** document for further details.
-  
 ## Contributing
 Currently it is not expected that third party developers will find it
 easy to contribute to this codebase, but that will change. If you are
@@ -90,10 +77,8 @@ interested in using or contributing contact Tim Dudgeon
 
 ---
 
-[bugs]: https://github.com/travis-ci/travis.rb/issues/571
 [ChemAxon docs]: https://docs.chemaxon.com/display/docs/Public+Repository#PublicRepository-HowtoCongfigureYourProject
 [Pipelines repository]: https://github.com/InformaticsMatters/pipelines
 [RDKit docs]: http://rdkit.org/docs/Install.html#building-from-source
 [Squonk]: (http://squonk.it)
 [Travis]: https://travis-ci.org/InformaticsMatters/squonk
-[Validate]: https://support.travis-ci.com/hc/en-us/articles/115002904174-Validating-travis-yml-files
