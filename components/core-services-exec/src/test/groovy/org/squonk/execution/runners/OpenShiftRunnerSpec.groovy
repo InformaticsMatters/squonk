@@ -31,7 +31,7 @@ class OpenShiftRunnerSpec extends Specification {
     void "construction"() {
 
         when:
-        OpenShiftRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, localWorkDir, "123")
+        OpenShiftRunner runner = new OpenShiftRunner("busybox", null, hostBaseWorkDir, localWorkDir, "123")
 
         then:
         runner.currentStatus == AbstractRunner.RUNNER_CREATED;
@@ -45,7 +45,7 @@ class OpenShiftRunnerSpec extends Specification {
     void "make workdir"() {
 
         setup:
-        OpenShiftRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, localWorkDir, "123")
+        OpenShiftRunner runner = new OpenShiftRunner("busybox", null, hostBaseWorkDir, localWorkDir, "123")
 
         when:
         runner.init()
@@ -61,7 +61,7 @@ class OpenShiftRunnerSpec extends Specification {
     void "clean workdir"() {
 
         setup:
-        ContainerRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, localWorkDir, "123")
+        ContainerRunner runner = new OpenShiftRunner("busybox", null, hostBaseWorkDir, localWorkDir, "123")
         runner.init()
 
         when:
@@ -75,7 +75,7 @@ class OpenShiftRunnerSpec extends Specification {
     void "execute before init"() {
 
         setup:
-        ContainerRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, localWorkDir, "123")
+        ContainerRunner runner = new OpenShiftRunner("busybox", null, hostBaseWorkDir, localWorkDir, "123")
 
         when:
         runner.execute("/bin/sh", "/source/run.sh")

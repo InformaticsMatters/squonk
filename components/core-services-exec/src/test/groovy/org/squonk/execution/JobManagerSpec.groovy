@@ -59,6 +59,7 @@ class JobManagerSpec extends Specification {
                 // these are specific to docker execution
                 "org.squonk.execution.steps.impl.DefaultDockerExecutorStep", //String executorClassName,
                 "informaticsmatters/pipelines-busybox:1.0.0",
+                null,
                 "cp input.sdf.gz output.sdf.gz",
                 null)
     }
@@ -86,6 +87,7 @@ class JobManagerSpec extends Specification {
                 // these are specific to docker execution
                 "org.squonk.execution.steps.impl.DefaultDockerExecutorStep", //String executorClassName,
                 "informaticsmatters/pipelines-busybox:1.0.0",
+                null,
                 "cp input.data.gz output.data.gz && cp input.metadata output.metadata",
                 null)
     }
