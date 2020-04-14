@@ -592,9 +592,9 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Container resources
         Map<String,Quantity> limits = new HashMap<String,Quantity>();
-        limitMap.put('cpu', new Quantity(OS_POD_CPU_RESOURCE));
+        limitMap.put("cpu", new Quantity(OS_POD_CPU_RESOURCE));
         Map<String,Quantity> requests = new HashMap<String,Quantity>();
-        requestMap.put('cpu', new Quantity(OS_POD_CPU_RESOURCE));
+        requestMap.put("cpu", new Quantity(OS_POD_CPU_RESOURCE));
         ResourceRequirements resources = new ResourceRequirementsBuilder()
             .withLimits(limitMap)
             .withRequests(requestMap).build();
