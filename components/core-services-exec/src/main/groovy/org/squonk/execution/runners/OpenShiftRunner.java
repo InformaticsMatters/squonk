@@ -148,9 +148,10 @@ public class OpenShiftRunner extends AbstractRunner {
         // - "Complete" (Stopped, waiting for the exit code event)
         // - "Finished" (where the exit code is available)
         private String podPhase = "Waiting";
-        // The exit code of the Pod's container
-        // Assigned when the container has terminated.
-        private int containerExitCode = 1;
+        // The exit code of the Pod's container.
+        // Actually assigned when the container has terminated.
+        // The default is to assume all is well.
+        private int containerExitCode = 0;
 
         /**
          * Basic constructor.
@@ -299,8 +300,8 @@ public class OpenShiftRunner extends AbstractRunner {
 
             if (cause != null) {
                 cause.printStackTrace();
-                LOG.severe("podName=" + podName +
-                           " cause.message=" + cause.getMessage());
+                LOG.warning("podName=" + podName +
+                            " cause.message=" + cause.getMessage());
             }
             podPhase = "Finished";
 
