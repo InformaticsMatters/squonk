@@ -591,9 +591,9 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withPersistentVolumeClaim(pvcSrc).build();
 
         // Container resources
-        Map<String,Quantity> limits = HashMap<String,Quantity>();
+        Map<String,Quantity> limits = new HashMap<String,Quantity>();
         limitMap.put('cpu', new Quantity(OS_POD_CPU_RESOURCE));
-        Map<String,Quantity> requests = HashMap<String,Quantity>();
+        Map<String,Quantity> requests = new HashMap<String,Quantity>();
         requestMap.put('cpu', new Quantity(OS_POD_CPU_RESOURCE));
         ResourceRequirements resources = new ResourceRequirementsBuilder()
             .withLimits(limitMap)
