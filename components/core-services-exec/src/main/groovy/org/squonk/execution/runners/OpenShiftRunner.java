@@ -182,8 +182,8 @@ public class OpenShiftRunner extends AbstractRunner {
         }
 
         /**
-         * Returns true when the watched Pod has run to completion
-         * (with or without an error).
+         * Returns true when the watched Pod has passed the 'Waiting' phase
+         * (or it's been restarted)
          *
          * @return True on completion.
          */
@@ -784,6 +784,7 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info(podName + " (Waiting for Pod completion)");
         long podStartTimeMillis = System.currentTimeMillis();
         boolean podStartFailure = false;
+        boolean podHasStarted = false;
         while (!podStartFailure
                && !podWatcher.podFinished()
                && !stopRequested) {
@@ -811,13 +812,17 @@ public class OpenShiftRunner extends AbstractRunner {
             }
 
             // Still waiting for the Pod to 'start'?
-            if (!podWatcher.podStarted()) {
-                // Have we waited too long for the Pod to start?
-                long now = System.currentTimeMillis();
-                long elapsedMins = (now - podStartTimeMillis) / 60000;
-                if (elapsedMins >= OS_POD_START_GRACE_PERIOD_M) {
-                    LOG.warning(podName + " failed to start. Leaving.");
-                    podStartFailure = true;
+            if (!podHasStarted) {
+                if (podWatcher.podStarted()) {
+                    podHasStarted = true;
+                } else {
+                    // Have we waited too long for the Pod to start?
+                    long now = System.currentTimeMillis();
+                    long elapsedMins = (now - podStartTimeMillis) / 60000;
+                    if (elapsedMins >= OS_POD_START_GRACE_PERIOD_M) {
+                        LOG.warning(podName + " failed to start. Leaving.");
+                        podStartFailure = true;
+                    }
                 }
             }
 
