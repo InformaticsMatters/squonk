@@ -157,6 +157,10 @@ public class OpenShiftRunner extends AbstractRunner {
         // Actually assigned when the container has terminated.
         // The default is to assume all is well.
         private int containerExitCode = 0;
+        // Has the watcher experienced an 'onClose()' exception? (#ch507).
+        // If necessary, the user can act on this to replace the watcher.
+        private boolean onCloseException = false;
+        private String onCloseExceptionMessage = "";
 
         /**
          * Basic constructor.
@@ -194,6 +198,22 @@ public class OpenShiftRunner extends AbstractRunner {
          */
         int exitCode() {
             return containerExitCode;
+        }
+
+        /**
+         * Returns true if the watcher received an exception
+         * through its onClose() method.
+         */
+        boolean hasOnCloseException() {
+            return onCloseException;
+        }
+
+        /**
+         * Returns true if the watcher received an exception
+         * through its onClose() method.
+         */
+        String getOnCloseExceptionMessage() {
+            return onCloseExceptionMessage;
         }
 
         @Override
@@ -303,12 +323,26 @@ public class OpenShiftRunner extends AbstractRunner {
         @Override
         public void onClose(KubernetesClientException cause) {
 
+            // If there's an exception, log and keep it.
+            // The user may want to re-create the watcher instance
+            // asa mechanism of timeout recovery. The watcher can
+            // experience an exception like the "too old resource version"
+            // if the underlying Pod has been running too long (see ch507).
+            //
+            // The Pod's only 'Finished' of there's been no exception
+
             if (cause != null) {
+
+                onCloseException = true;
+                onCloseExceptionMessage = cause.getMessage();
+
                 cause.printStackTrace();
                 LOG.warning("podName=" + podName +
-                            " cause.message=" + cause.getMessage());
+                            " cause.message=" + onCloseExceptionMessage);
+
+            } else {
+                podPhase = "Finished";
             }
-            podPhase = "Finished";
 
         }
 
@@ -468,6 +502,42 @@ public class OpenShiftRunner extends AbstractRunner {
         // Form the string that will be used to name all our OS objects...
         podName = String.format("%s-%s", OS_POD_BASE_NAME, subPath);
         LOG.info("podName='" + podName + "'");
+
+    }
+
+    /**
+     * Create a Pod 'watcher' to monitor the Pod execution progress.
+     * returning a PodWatcher instance or null on failure.
+     *
+     * @param podName The name pf the Pod to watch.
+     *
+     * @throws KubernetesClientException
+     */
+    private PodWatcher createPodWatcher(String podName) {
+
+        // Close and forget any existing watcher.
+        if (watchObject != null) {
+            watchObject.close();
+            watchObject = null;
+        }
+
+        PodWatcher podWatcher = new PodWatcher(podName);
+        try {
+            watchObject = client.pods()
+                    .withName(podName)
+                    .watch(podWatcher);
+        } catch (KubernetesClientException ex) {
+
+            // Nothing to do other than re-throw...
+            LOG.severe("KubernetesClientException creating PodWatcher : " +
+                       ex.getMessage());
+            watchObject.close();
+            watchObject = null;
+            podWatcher = null;
+
+        }
+
+       return podWatcher;
 
     }
 
@@ -679,25 +749,13 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withVolumes(volume)
                 .endSpec().build();
 
-        // Create a Pod 'watcher'
-        // to monitor the Pod execution progress...
-
+        // Create a Watcher to monitor PodEvents
         LOG.info(podName + " (Creating PodWatcher)");
-        PodWatcher podWatcher = new PodWatcher(podName);
-        try {
-            watchObject = client.pods()
-                    .withName(podName)
-                    .watch(podWatcher);
-        } catch (KubernetesClientException ex) {
-
-            // Nothing to do other than log, cleanup and re-throw...
-            LOG.severe("KubernetesClientException creating PodWatcher : " +
-                       ex.getMessage());
+        PodWatcher podWatcher = createPodWatcher(podName);
+        if (podWatcher == null) {
             cleanup();
             isRunning = RUNNER_FINISHED;
-
             throw new IllegalStateException("Exception creating PodWatcher", ex);
-
         }
 
         // Launch...
@@ -737,6 +795,22 @@ public class OpenShiftRunner extends AbstractRunner {
                 e.printStackTrace();
             }
 
+            // Do we need to restart the watcher?
+            // i.e. has it encountered an onClose() exception?
+            if (podWatcher.hasOnCloseException()) {
+                Log.warning(podName +" PodWatcher has been closed" +
+                            " (" + podWatcher.getOnCloseExceptionMessage() + ")");
+                LOG.info(podName + " (Re-creating PodWatcher)");
+                podWatcher = createPodWatcher(podName);
+                if (podWatcher == null) {
+                    // Couldn't re-create a PodWatcher -
+                    // something's seriously wrong and so we must leave.
+                    Log.severe(podName +" PodWatcher could not be re-created");
+                    break;
+                }
+            }
+
+            // Still waiting for the Pod to 'start'?
             if (!podWatcher.podStarted()) {
                 // Have we waited too long for the Pod to start?
                 long now = System.currentTimeMillis();
@@ -748,7 +822,9 @@ public class OpenShiftRunner extends AbstractRunner {
             }
 
         }
-        if (!podStartFailure && !stopRequested) {
+
+        // Get the Pod exit code from the PodWatcher (if it exists)
+        if (podWatcher != null && !podStartFailure && !stopRequested) {
             containerExitCode = podWatcher.exitCode();
             LOG.info(podName + " containerExitCode=" + containerExitCode);
         }
