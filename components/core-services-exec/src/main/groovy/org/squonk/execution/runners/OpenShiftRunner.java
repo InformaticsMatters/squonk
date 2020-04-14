@@ -75,6 +75,9 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_DEBUG_MODE_ENV_NAME = "SQUONK_POD_DEBUG_MODE";
     private static final String POD_DEBUG_MODE_DEFAULT = "0";
 
+    private static final String POD_CPU_RESOURCE_NAME = "SQUONK_POD_CPU_RESOURCE";
+    private static final String POD_CPU_RESOURCE_DEFAULT = "1";
+
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
     // as a separate environment variable into the Pod container.
@@ -100,6 +103,8 @@ public class OpenShiftRunner extends AbstractRunner {
     // The Pod debug level (set in the static initialiser).
     // Currently anything other than 0 results in verbose debug.
     private static final int OS_POD_DEBUG_MODE;
+    // The Pod CPU resource (request and limit) (set in the static initialiser).
+    private static final String OS_POD_CPU_RESOURCE;
 
     public static final int LOG_HISTORY;
 
@@ -568,7 +573,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         LOG.info(podName + " (Preparing to execute)");
 
-        isRunning = RUNNER_RUNNNG;
+        isRunning = RUNNER_RUNNING;
         isExecuting = true;
         int containerExitCode = 0;
 
@@ -584,6 +589,15 @@ public class OpenShiftRunner extends AbstractRunner {
         Volume volume = new VolumeBuilder()
                 .withName(podName)
                 .withPersistentVolumeClaim(pvcSrc).build();
+
+        // Container resources
+        Map<String,Quantity> limits = HashMap<String,Quantity>();
+        limitMap.put('cpu', new Quantity(OS_POD_CPU_RESOURCE));
+        Map<String,Quantity> requests = HashMap<String,Quantity>();
+        requestMap.put('cpu', new Quantity(OS_POD_CPU_RESOURCE));
+        ResourceRequirements resources = new ResourceRequirementsBuilder()
+            .withLimits(limitMap)
+            .withRequests(requestMap).build();
 
         // Volume Mount
         VolumeMount volumeMount = new VolumeMountBuilder()
@@ -628,6 +642,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
                 .withEnv(containerEnv)
+                .withResources(resources)
                 .withVolumeMounts(volumeMount).build();
 
         // Here we prepare a (potentially empty) list of pull secrets
@@ -786,7 +801,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // The only sensible running state is RUNNING.
         // Any other state can be ignored.
-        if (isRunning != RUNNER_RUNNNG) {
+        if (isRunning != RUNNER_RUNNING) {
             return;
         }
 
@@ -917,6 +932,11 @@ public class OpenShiftRunner extends AbstractRunner {
         int podDebugInt = Integer.parseInt(podDebug);
         OS_POD_DEBUG_MODE = podDebugInt;
         LOG.info("OS_POD_DEBUG=" + OS_POD_DEBUG_MODE);
+
+        // And the Pod resources (expected to define CPU request and limit)
+        OS_POD_CPU_RESOURCE = IOUtils
+                .getConfiguration(POD_CPU_RESOURCE_NAME, POD_CPU_RESOURCE_DEFAULT);
+        LOG.info("OS_POD_CPU_RESOURCE=" + OS_POD_CPU_RESOURCE);
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).
