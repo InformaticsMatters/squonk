@@ -755,7 +755,7 @@ public class OpenShiftRunner extends AbstractRunner {
         if (podWatcher == null) {
             cleanup();
             isRunning = RUNNER_FINISHED;
-            throw new IllegalStateException("Exception creating PodWatcher", ex);
+            throw new IllegalStateException("Exception creating PodWatcher");
         }
 
         // Launch...
@@ -798,14 +798,14 @@ public class OpenShiftRunner extends AbstractRunner {
             // Do we need to restart the watcher?
             // i.e. has it encountered an onClose() exception?
             if (podWatcher.hasOnCloseException()) {
-                Log.warning(podName +" PodWatcher has been closed" +
+                LOG.warning(podName +" PodWatcher has been closed" +
                             " (" + podWatcher.getOnCloseExceptionMessage() + ")");
                 LOG.info(podName + " (Re-creating PodWatcher)");
                 podWatcher = createPodWatcher(podName);
                 if (podWatcher == null) {
                     // Couldn't re-create a PodWatcher -
                     // something's seriously wrong and so we must leave.
-                    Log.severe(podName +" PodWatcher could not be re-created");
+                    LOG.severe(podName +" PodWatcher could not be re-created");
                     break;
                 }
             }
