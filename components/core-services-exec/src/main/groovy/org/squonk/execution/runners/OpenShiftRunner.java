@@ -75,6 +75,9 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_DEBUG_MODE_ENV_NAME = "SQUONK_POD_DEBUG_MODE";
     private static final String POD_DEBUG_MODE_DEFAULT = "0";
 
+    private static final String POD_CPU_RESOURCE_NAME = "SQUONK_POD_CPU_RESOURCE";
+    private static final String POD_CPU_RESOURCE_DEFAULT = "1";
+
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
     // as a separate environment variable into the Pod container.
@@ -100,6 +103,8 @@ public class OpenShiftRunner extends AbstractRunner {
     // The Pod debug level (set in the static initialiser).
     // Currently anything other than 0 results in verbose debug.
     private static final int OS_POD_DEBUG_MODE;
+    // The Pod CPU resource (request and limit) (set in the static initialiser).
+    private static final String OS_POD_CPU_RESOURCE;
 
     public static final int LOG_HISTORY;
 
@@ -148,9 +153,14 @@ public class OpenShiftRunner extends AbstractRunner {
         // - "Complete" (Stopped, waiting for the exit code event)
         // - "Finished" (where the exit code is available)
         private String podPhase = "Waiting";
-        // The exit code of the Pod's container
-        // Assigned when the container has terminated.
-        private int containerExitCode = 1;
+        // The exit code of the Pod's container.
+        // Actually assigned when the container has terminated.
+        // The default is to assume all is well.
+        private int containerExitCode = 0;
+        // Has the watcher experienced an 'onClose()' exception? (#ch507).
+        // If necessary, the user can act on this to replace the watcher.
+        private boolean onCloseException = false;
+        private String onCloseExceptionMessage = "";
 
         /**
          * Basic constructor.
@@ -172,8 +182,8 @@ public class OpenShiftRunner extends AbstractRunner {
         }
 
         /**
-         * Returns true when the watched Pod has run to completion
-         * (with or without an error).
+         * Returns true when the watched Pod has passed the 'Waiting' phase
+         * (or it's been restarted)
          *
          * @return True on completion.
          */
@@ -188,6 +198,22 @@ public class OpenShiftRunner extends AbstractRunner {
          */
         int exitCode() {
             return containerExitCode;
+        }
+
+        /**
+         * Returns true if the watcher received an exception
+         * through its onClose() method.
+         */
+        boolean hasOnCloseException() {
+            return onCloseException;
+        }
+
+        /**
+         * Returns true if the watcher received an exception
+         * through its onClose() method.
+         */
+        String getOnCloseExceptionMessage() {
+            return onCloseExceptionMessage;
         }
 
         @Override
@@ -297,12 +323,26 @@ public class OpenShiftRunner extends AbstractRunner {
         @Override
         public void onClose(KubernetesClientException cause) {
 
+            // If there's an exception, log and keep it.
+            // The user may want to re-create the watcher instance
+            // asa mechanism of timeout recovery. The watcher can
+            // experience an exception like the "too old resource version"
+            // if the underlying Pod has been running too long (see ch507).
+            //
+            // The Pod's only 'Finished' of there's been no exception
+
             if (cause != null) {
+
+                onCloseException = true;
+                onCloseExceptionMessage = cause.getMessage();
+
                 cause.printStackTrace();
-                LOG.severe("podName=" + podName +
-                           " cause.message=" + cause.getMessage());
+                LOG.warning("podName=" + podName +
+                            " cause.message=" + onCloseExceptionMessage);
+
+            } else {
+                podPhase = "Finished";
             }
-            podPhase = "Finished";
 
         }
 
@@ -466,6 +506,42 @@ public class OpenShiftRunner extends AbstractRunner {
     }
 
     /**
+     * Create a Pod 'watcher' to monitor the Pod execution progress.
+     * returning a PodWatcher instance or null on failure.
+     *
+     * @param podName The name pf the Pod to watch.
+     *
+     * @throws KubernetesClientException
+     */
+    private PodWatcher createPodWatcher(String podName) {
+
+        // Close and forget any existing watcher.
+        if (watchObject != null) {
+            watchObject.close();
+            watchObject = null;
+        }
+
+        PodWatcher podWatcher = new PodWatcher(podName);
+        try {
+            watchObject = client.pods()
+                    .withName(podName)
+                    .watch(podWatcher);
+        } catch (KubernetesClientException ex) {
+
+            // Nothing to do other than re-throw...
+            LOG.severe("KubernetesClientException creating PodWatcher : " +
+                       ex.getMessage());
+            watchObject.close();
+            watchObject = null;
+            podWatcher = null;
+
+        }
+
+       return podWatcher;
+
+    }
+
+    /**
      * Given an existing configuration string this method adds material
      * to allow a Nextflow container to run properly in our OpenShift
      * environment. This mainly consists of exposing the name of the
@@ -567,7 +643,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         LOG.info(podName + " (Preparing to execute)");
 
-        isRunning = RUNNER_RUNNNG;
+        isRunning = RUNNER_RUNNING;
         isExecuting = true;
         int containerExitCode = 0;
 
@@ -583,6 +659,15 @@ public class OpenShiftRunner extends AbstractRunner {
         Volume volume = new VolumeBuilder()
                 .withName(podName)
                 .withPersistentVolumeClaim(pvcSrc).build();
+
+        // Container resources
+        Map<String,Quantity> limitMap = new HashMap<String,Quantity>();
+        limitMap.put("cpu", new Quantity(OS_POD_CPU_RESOURCE));
+        Map<String,Quantity> requestMap = new HashMap<String,Quantity>();
+        requestMap.put("cpu", new Quantity(OS_POD_CPU_RESOURCE));
+        ResourceRequirements resources = new ResourceRequirementsBuilder()
+            .withLimits(limitMap)
+            .withRequests(requestMap).build();
 
         // Volume Mount
         VolumeMount volumeMount = new VolumeMountBuilder()
@@ -627,6 +712,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
                 .withEnv(containerEnv)
+                .withResources(resources)
                 .withVolumeMounts(volumeMount).build();
 
         // Here we prepare a (potentially empty) list of pull secrets
@@ -663,25 +749,13 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withVolumes(volume)
                 .endSpec().build();
 
-        // Create a Pod 'watcher'
-        // to monitor the Pod execution progress...
-
+        // Create a Watcher to monitor PodEvents
         LOG.info(podName + " (Creating PodWatcher)");
-        PodWatcher podWatcher = new PodWatcher(podName);
-        try {
-            watchObject = client.pods()
-                    .withName(podName)
-                    .watch(podWatcher);
-        } catch (KubernetesClientException ex) {
-
-            // Nothing to do other than log, cleanup and re-throw...
-            LOG.severe("KubernetesClientException creating PodWatcher : " +
-                       ex.getMessage());
+        PodWatcher podWatcher = createPodWatcher(podName);
+        if (podWatcher == null) {
             cleanup();
             isRunning = RUNNER_FINISHED;
-
-            throw new IllegalStateException("Exception creating PodWatcher", ex);
-
+            throw new IllegalStateException("Exception creating PodWatcher");
         }
 
         // Launch...
@@ -710,6 +784,7 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info(podName + " (Waiting for Pod completion)");
         long podStartTimeMillis = System.currentTimeMillis();
         boolean podStartFailure = false;
+        boolean podHasStarted = false;
         while (!podStartFailure
                && !podWatcher.podFinished()
                && !stopRequested) {
@@ -721,18 +796,40 @@ public class OpenShiftRunner extends AbstractRunner {
                 e.printStackTrace();
             }
 
-            if (!podWatcher.podStarted()) {
-                // Have we waited too long for the Pod to start?
-                long now = System.currentTimeMillis();
-                long elapsedMins = (now - podStartTimeMillis) / 60000;
-                if (elapsedMins >= OS_POD_START_GRACE_PERIOD_M) {
-                    LOG.warning(podName + " failed to start. Leaving.");
-                    podStartFailure = true;
+            // Do we need to restart the watcher?
+            // i.e. has it encountered an onClose() exception?
+            if (podWatcher.hasOnCloseException()) {
+                LOG.warning(podName +" PodWatcher has been closed" +
+                            " (" + podWatcher.getOnCloseExceptionMessage() + ")");
+                LOG.info(podName + " (Re-creating PodWatcher)");
+                podWatcher = createPodWatcher(podName);
+                if (podWatcher == null) {
+                    // Couldn't re-create a PodWatcher -
+                    // something's seriously wrong and so we must leave.
+                    LOG.severe(podName +" PodWatcher could not be re-created");
+                    break;
+                }
+            }
+
+            // Still waiting for the Pod to 'start'?
+            if (!podHasStarted) {
+                if (podWatcher.podStarted()) {
+                    podHasStarted = true;
+                } else {
+                    // Have we waited too long for the Pod to start?
+                    long now = System.currentTimeMillis();
+                    long elapsedMins = (now - podStartTimeMillis) / 60000;
+                    if (elapsedMins >= OS_POD_START_GRACE_PERIOD_M) {
+                        LOG.warning(podName + " failed to start. Leaving.");
+                        podStartFailure = true;
+                    }
                 }
             }
 
         }
-        if (!podStartFailure && !stopRequested) {
+
+        // Get the Pod exit code from the PodWatcher (if it exists)
+        if (podWatcher != null && !podStartFailure && !stopRequested) {
             containerExitCode = podWatcher.exitCode();
             LOG.info(podName + " containerExitCode=" + containerExitCode);
         }
@@ -785,7 +882,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // The only sensible running state is RUNNING.
         // Any other state can be ignored.
-        if (isRunning != RUNNER_RUNNNG) {
+        if (isRunning != RUNNER_RUNNING) {
             return;
         }
 
@@ -916,6 +1013,11 @@ public class OpenShiftRunner extends AbstractRunner {
         int podDebugInt = Integer.parseInt(podDebug);
         OS_POD_DEBUG_MODE = podDebugInt;
         LOG.info("OS_POD_DEBUG=" + OS_POD_DEBUG_MODE);
+
+        // And the Pod resources (expected to define CPU request and limit)
+        OS_POD_CPU_RESOURCE = IOUtils
+                .getConfiguration(POD_CPU_RESOURCE_NAME, POD_CPU_RESOURCE_DEFAULT);
+        LOG.info("OS_POD_CPU_RESOURCE=" + OS_POD_CPU_RESOURCE);
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).

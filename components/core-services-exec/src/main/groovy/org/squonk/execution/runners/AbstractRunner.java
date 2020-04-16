@@ -30,7 +30,7 @@ public abstract class AbstractRunner implements ContainerRunner {
     protected final String jobId;
 
     static final int RUNNER_CREATED = 0;     // Created, init() to be called
-    static final int RUNNER_RUNNNG = 1;      // execute() has been invoked
+    static final int RUNNER_RUNNING = 1;      // execute() has been invoked
     static final int RUNNER_FINISHED = 2;    // execute() complete with/without error
     static final int RUNNER_STOPPING = 3;    // stop() has been invoked
     static final int RUNNER_STOPPED = 4;     // stop() has completed
