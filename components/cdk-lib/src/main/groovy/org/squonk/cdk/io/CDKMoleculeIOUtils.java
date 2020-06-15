@@ -33,8 +33,6 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.aromaticity.Kekulization;
-import org.openscience.cdk.atomtype.CDKAtomTypeMatcher;
-import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 import org.squonk.cdk.CDKSettings;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.MoleculeObject;
@@ -226,11 +224,7 @@ public class CDKMoleculeIOUtils {
     }
 
     public static void configureTypesAndHs(IAtomContainer mol)  throws CDKException {
-        CDKAtomTypeMatcher matcher = CDKAtomTypeMatcher.getInstance(mol.getBuilder());
-        IAtomType[] types = matcher.findMatchingAtomTypes(mol);
-        for (int i=0; i < mol.getAtomCount(); i++) {
-            AtomTypeManipulator.configure(mol.getAtom(i), types[i]);
-        }
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
         CDKHydrogenAdder adder = CDKHydrogenAdder.getInstance(mol.getBuilder());
         adder.addImplicitHydrogens(mol);
     }
