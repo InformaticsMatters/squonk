@@ -91,7 +91,7 @@ public class CdkMolConvertServlet extends HttpServlet {
 
         try {
             IAtomContainer convertedMol = CDKMoleculeIOUtils.readMolecule(mol);
-            MoleculeObject convertedMO = CDKMoleculeIOUtils.convertToFormat(convertedMol, format);
+            MoleculeObject convertedMO = CDKMoleculeIOUtils.convertToFormat(convertedMol, format, null);
             String convertedStr = convertedMO.getSource();
             byte[] bytes = convertedStr.getBytes();
 

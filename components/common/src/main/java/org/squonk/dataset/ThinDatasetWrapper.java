@@ -18,6 +18,7 @@ package org.squonk.dataset;
 
 
 import org.squonk.types.BasicObject;
+import org.squonk.types.MoleculeObject;
 
 import java.io.IOException;
 import java.util.*;
@@ -25,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+
 
 /**
  * Created by timbo on 19/01/17.
@@ -120,7 +122,7 @@ public class ThinDatasetWrapper<T extends BasicObject> {
         DatasetMetadata<T> newMetadata = new DatasetMetadata<>(type);
         newMetadata.setSize(requestMetadata.getSize());
 
-        return new Dataset<T>(type, stream, newMetadata);
+        return new Dataset<T>(stream, newMetadata);
     }
 
     private void mapInputField(ThinFieldDescriptor thinDescriptor, T fat, T thin) {
@@ -202,7 +204,7 @@ public class ThinDatasetWrapper<T extends BasicObject> {
             }
         }).filter(m -> m != null);
 
-        Dataset<T> resultDataset = new Dataset<>(type, resultObjs, mergedMetadata);
+        Dataset<T> resultDataset = new Dataset<>(resultObjs, mergedMetadata);
 
         return resultDataset;
     }

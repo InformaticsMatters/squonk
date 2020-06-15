@@ -52,9 +52,11 @@ public class CDKDatasetConvertProcessor implements Processor {
         if (dataset == null || dataset.getType() != MoleculeObject.class) {
             throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
         }
-        String format = exch.getIn().getHeader(HEADER_MOLECULE_FORMAT, String.class);
+        final String format = exch.getIn().getHeader(HEADER_MOLECULE_FORMAT, String.class);
         if (format == null) {
             throw new IllegalStateException("Format to convert to must be specified with a header named " + HEADER_MOLECULE_FORMAT);
+        } else {
+            LOG.info("Converting to format " + format);
         }
         Stream<MoleculeObject> stream = dataset.getStream();
         AtomicInteger counter = new AtomicInteger(0);
