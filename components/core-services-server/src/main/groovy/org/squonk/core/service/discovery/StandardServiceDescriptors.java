@@ -51,7 +51,10 @@ public class StandardServiceDescriptors {
                 //DatasetMoleculesFromFieldStep.SERVICE_DESCRIPTOR,
                 //SmilesStructuresStep.SERVICE_DESCRIPTOR,
                 //MolfileReaderStep.SERVICE_DESCRIPTOR,
-                //ValueTransformerStep.SERVICE_DESCRIPTOR
+                //ValueTransformerStep.SERVICE_DESCRIPTOR,
+                //DatasetSorterStep.SERVICE_DESCRIPTOR,
+                //SimpleSorterStep.SERVICE_DESCRIPTOR,
+                //DatasetSplitOnNullStep.SERVICE_DESCRIPTOR
         }));
 
     }

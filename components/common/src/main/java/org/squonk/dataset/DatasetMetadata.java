@@ -446,7 +446,14 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable, Clo
     }
 
     public DatasetMetadata clone() {
-        return new DatasetMetadata(type, valueClassMappings, getFieldMetaProps(), size, properties);
+        // TODO - perform a deep copy
+        Map<String, Class> vcm = new LinkedHashMap<>();
+        vcm.putAll(valueClassMappings);
+        List<PropertiesHolder> fmp = new ArrayList();
+        fmp.addAll(getFieldMetaProps());
+        Map<String, Object> props = new LinkedHashMap<>();
+        props.putAll(properties);
+        return new DatasetMetadata(type, vcm, fmp, size, props);
     }
 
     public static class PropertiesHolder implements Serializable {
@@ -487,6 +494,5 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable, Clo
         public Map<String, Object> getValues() {
             return values;
         }
-
     }
 }

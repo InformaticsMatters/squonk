@@ -27,6 +27,8 @@ public interface StepDefinitionConstants {
 
     String VARIABLE_INPUT_DATASET = "input";
     String VARIABLE_OUTPUT_DATASET = "output";
+    String VARIABLE_OUTPUT_PASS = "pass";
+    String VARIABLE_OUTPUT_FAIL = "fail";
     String VARIABLE_FILE_INPUT = "fileContent";
 
     String OPTION_BODY = "body";
@@ -137,6 +139,11 @@ public interface StepDefinitionConstants {
         String OPTION_UUIDS = "uuids";
     }
 
+    interface DatasetSplitOnNull {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetSplitOnNullStep";
+        String OPTION_FIELD = "field";
+    }
+
     interface UntrustedGroovyDatasetScript {
          String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedGroovyDatasetScriptStep";
          String OPTION_SCRIPT = "script";
@@ -165,6 +172,12 @@ public interface StepDefinitionConstants {
     interface DatasetSorter {
         String CLASSNAME = "org.squonk.execution.steps.impl.DatasetSorterStep";
         String OPTION_DIRECTIVES = "directives";
+    }
+
+    interface SimpleSorter {
+        String CLASSNAME = "org.squonk.execution.steps.impl.SimpleSorterStep";
+        String OPTION_FIELD = "sortField";
+        String OPTION_ASC = "ascending";
     }
 
     interface DockerProcessDataset {
