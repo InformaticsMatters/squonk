@@ -40,9 +40,9 @@ import java.util.stream.Collectors;
 /**
  * Created by timbo on 29/12/15.
  */
-public class DatasetSplitOnNullStep<P extends BasicObject> extends AbstractStep {
+public class DatasetSplitOnNullStep<P extends BasicObject> extends AbstractDatasetSplitStep<P> {
 
-    private static final Logger LOG = Logger.getLogger(DatasetUUIDFilterStep.class.getName());
+    private static final Logger LOG = Logger.getLogger(DatasetSplitOnNullStep.class.getName());
 
     public static final String OPTION_FIELD = StepDefinitionConstants.DatasetSplitOnNull.OPTION_FIELD;
 
@@ -51,12 +51,12 @@ public class DatasetSplitOnNullStep<P extends BasicObject> extends AbstractStep 
             "core.dataset.splitonnull.v1",
             "DatasetSplitOnNull",
             "Split a dataset based on whether values for a field are present or not",
-            new String[]{"filter", "uuid", "dataset"},
+            new String[]{"filter", "split", "dataset"},
             null, "icons/filter.png",
             ServiceConfig.Status.ACTIVE,
             new Date(),
             IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
-            new IODescriptor[] {
+            new IODescriptor[]{
                     IODescriptors.createBasicObjectDataset(StepDefinitionConstants.VARIABLE_OUTPUT_PASS),
                     IODescriptors.createBasicObjectDataset(StepDefinitionConstants.VARIABLE_OUTPUT_FAIL)
             },
@@ -68,30 +68,10 @@ public class DatasetSplitOnNullStep<P extends BasicObject> extends AbstractStep 
 
             },
             null, null, null,
-            DatasetUUIDFilterStep.class.getName()
+            DatasetSplitOnNullStep.class.getName()
     );
 
-    protected Map<String, Object> doExecute(Map<String, Object> inputs) throws Exception {
-        if (inputs.size() == 0) {
-            throw new IllegalArgumentException("Single dataset expected - found none");
-        } else if (inputs.size() > 1) {
-            throw new IllegalArgumentException("Single dataset expected - found " + inputs.size());
-        }
-        if (getOutputs() != null) {
-            for (IODescriptor iod : getOutputs()) {
-                LOG.info("Found output " + iod.getName());
-            }
-        } else {
-            LOG.warning("Outputs not defined");
-        }
-
-        Dataset<P> input = (Dataset<P>)inputs.values().iterator().next();
-        Map<String,Object> results = doExecuteWithDataset(input);
-        return results;
-    }
-
-
-    protected Map<String,Object> doExecuteWithDataset(Dataset<P> input) throws Exception {
+    protected Map<String, Object> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
         TypeConverter converter = findTypeConverter();
         String fieldName = getOption(OPTION_FIELD, String.class, converter);
@@ -101,7 +81,7 @@ public class DatasetSplitOnNullStep<P extends BasicObject> extends AbstractStep 
         Map<Boolean, List<P>> groups = input.getStream()
                 .collect(Collectors.partitioningBy(mo -> mo.getValue(fieldName) != null));
 
-        statusMessage = groups.get(true).size() + " present and " +  groups.get(false).size() + " absent";
+        statusMessage = groups.get(true).size() + " present and " + groups.get(false).size() + " absent";
 
         LOG.info("Number present=" + groups.get(true).size());
         LOG.info("Number absent =" + groups.get(false).size());
@@ -115,8 +95,6 @@ public class DatasetSplitOnNullStep<P extends BasicObject> extends AbstractStep 
 
         return results;
     }
-
-
 
 
 }

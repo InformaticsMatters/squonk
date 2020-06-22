@@ -18,6 +18,7 @@ package org.squonk.core.service.discovery;
 
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptorSet;
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.steps.impl.*;
 
 import java.util.Arrays;
@@ -43,7 +44,11 @@ public class StandardServiceDescriptors {
                 DatasetMergerStep.SERVICE_DESCRIPTOR,
                 DatasetEnricherStep.SERVICE_DESCRIPTOR,
                 DatasetUUIDFilterStep.SERVICE_DESCRIPTOR,
-                FragnetExpansionStep.SERVICE_DESCRIPTOR
+                FragnetExpansionStep.SERVICE_DESCRIPTOR,
+                DatasetSplitStep.SERVICE_DESCRIPTOR,
+                DatasetSplitOnNullStep.SERVICE_DESCRIPTOR,
+                SimpleSorterStep.SERVICE_DESCRIPTOR,
+                DatasetSorterStep.SERVICE_DESCRIPTOR
                 // add these once the portal has been refactored to used these as services
                 //BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR,
                 //ChemblActivitiesFetcherStep.SERVICE_DESCRIPTOR,
@@ -52,9 +57,6 @@ public class StandardServiceDescriptors {
                 //SmilesStructuresStep.SERVICE_DESCRIPTOR,
                 //MolfileReaderStep.SERVICE_DESCRIPTOR,
                 //ValueTransformerStep.SERVICE_DESCRIPTOR,
-                //DatasetSorterStep.SERVICE_DESCRIPTOR,
-                //SimpleSorterStep.SERVICE_DESCRIPTOR,
-                //DatasetSplitOnNullStep.SERVICE_DESCRIPTOR
         }));
 
     }

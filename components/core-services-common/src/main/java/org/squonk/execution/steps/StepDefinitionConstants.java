@@ -144,6 +144,12 @@ public interface StepDefinitionConstants {
         String OPTION_FIELD = "field";
     }
 
+    interface DatasetSplit {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetSplitStep";
+        String OPTION_FRAC = "fraction";
+        String OPTION_RANDOMISE = "randomise";
+    }
+
     interface UntrustedGroovyDatasetScript {
          String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedGroovyDatasetScriptStep";
          String OPTION_SCRIPT = "script";
