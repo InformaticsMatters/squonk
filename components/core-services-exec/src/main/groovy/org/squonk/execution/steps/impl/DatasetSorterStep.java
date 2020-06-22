@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,7 @@ import org.squonk.options.MultiLineTextTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,9 +36,11 @@ import java.util.stream.Stream;
  *
  * Created by timbo on 13/09/16.
  */
-public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
+public class DatasetSorterStep<P extends BasicObject> extends AbstractSorterStep<P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSorterStep.class.getName());
+
+    public static final String OPTION_DIRECTIVES = StepDefinitionConstants.DatasetSorter.OPTION_DIRECTIVES;
 
     public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.sorter.v1",
             "Dataset sorter",
@@ -50,8 +49,8 @@ public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetSte
             null, "icons/filter.png",
             ServiceConfig.Status.ACTIVE,
             new Date(),
-            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
-            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(VAR_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(VAR_OUTPUT_DATASET),
             new OptionDescriptor[]{
 
                     new OptionDescriptor<>(
@@ -66,10 +65,6 @@ public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetSte
             DatasetSorterStep.class.getName()
     );
 
-    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-    public static final String OPTION_DIRECTIVES = StepDefinitionConstants.DatasetSorter.OPTION_DIRECTIVES;
-
     @Override
     protected Dataset<P> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
@@ -81,9 +76,7 @@ public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetSte
         DatasetMetadata<P> meta = input.getMetadata();
         List<SortDirective> directives = parse(directivesStr, meta);
 
-        Stream<P> stream = input.getStream();
-        Stream<P> sorted = stream.sorted(new SortComparator(directives));
-        sorted = addStreamCounter(sorted, MSG_PROCESSED);
+        Stream<P> sorted = doSort(input.getStream(), directives);
 
         meta.appendDatasetHistory("Sorted according to " + directives.stream()
                 .map((sd) -> sd.field + (sd.ascending ? " ASC" : " DESC"))
@@ -130,47 +123,5 @@ public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetSte
         }
 
         return list;
-    }
-
-
-    class SortDirective {
-
-        String field;
-        boolean ascending;
-
-        SortDirective(String field, boolean ascending) {
-            this.field = field;
-            this.ascending = ascending;
-        }
-
-    }
-
-    class SortComparator<T extends BasicObject> implements Comparator<T> {
-
-        private final List<SortDirective> directives;
-
-        SortComparator(List<SortDirective> directives) {
-            this.directives = directives;
-        }
-
-        @Override
-        public int compare(BasicObject o1, BasicObject o2) {
-            for (SortDirective directive : directives) {
-                Comparable c1 = (Comparable)o1.getValue(directive.field);
-                Comparable c2 = (Comparable)o2.getValue(directive.field);
-                int outcome = 0;
-                if (c1 != null && c2 != null) {
-                    outcome = directive.ascending ? c1.compareTo(c2) : 0 - c1.compareTo(c2);
-                } else if (c1 != null && c2 == null) {
-                    outcome = -1;
-                } else if (c1 == null && c2 != null) {
-                    outcome = 1;
-                }
-                if (outcome != 0) {
-                    return outcome;
-                }
-            }
-            return 0;
-        }
     }
 }

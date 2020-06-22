@@ -65,7 +65,7 @@ public class DefaultUserDetailsManager implements UserDetailsManager {
                     username,
                     Collections.singleton("standard-user")
             );
-            LOG.info("Created UserDetails from Servlet Principal: " + ud.toString());
+            LOG.fine("Created UserDetails from Servlet Principal: " + ud.toString());
             return ud;
         }
         return null;
