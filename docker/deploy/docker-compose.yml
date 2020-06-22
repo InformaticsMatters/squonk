@@ -120,6 +120,10 @@ services:
     #   curl -X POST --data-binary @- http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/dataset_to_sdf\
     #   -H 'Content-Type: application/x-squonk-dataset-molecule+json' -H 'Content-Encoding: gzip' -H 'Accept: chemical/x-mdl-sdfile'
     #
+    # Example of reformatting molecules in a dataset:
+    # curl -X POST --data-binary @Kinase_inhibs.json.gz -H 'Content-Type: application/x-squonk-dataset-molecule+json' -H 'Content-Encoding: gzip' \
+    #   http://localhost:8092/chem-services-cdk-basic/rest/v1/converters/dataset_convert_format?MoleculeFormat=mol:v3
+    #
     chemservices:
         image: squonk/chemservices-basic:${TAG}
         restart: on-failure

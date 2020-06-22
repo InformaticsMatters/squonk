@@ -16,9 +16,11 @@
 
 package org.squonk.cdk.services;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.camel.cdk.processor.CDKDatasetConvertProcessor;
 import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.core.ServiceDescriptorSet;
+import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
@@ -32,24 +34,39 @@ import java.util.Arrays;
 public class CdkConverterServices {
 
 
-    public static final HttpServiceDescriptor SERVICE_DESCRIPTOR_CONVERT_TO_SDF = createServiceDescriptor(
-            "cdk.export.sdf", "SDF Export (CDK)", "Convert to SD file format using CDK",
+    public static final HttpServiceDescriptor SERVICE_DESCRIPTOR_CONVERT_TO_SDF = new HttpServiceDescriptor(
+            "cdk.export.sdf",
+            "SDF Export (CDK)",
+            "Convert to SD file format using CDK",
             new String[]{"export", "dataset", "sdf", "sdfile", "cdk"},
             null,
-            "default_icon.png", "dataset_to_sdf", null);
+            "default_icon.png",
+            new IODescriptor[]{IODescriptors.createMoleculeObjectDataset("input")},
+            new IODescriptor[]{IODescriptors.createSDF("output")},
+            null,
+            StepDefinitionConstants.DatasetHttpExecutor.CLASSNAME,
+            "dataset_to_sdf"
+    );
 
-    public static final HttpServiceDescriptor SERVICE_DESCRIPTOR_CONVERT_DATASET = createServiceDescriptor(
-            "cdk.dataset.convert.molecule.format", "Convert molecule format", "Convert molecule format for a Dataset using CDK",
+    public static final HttpServiceDescriptor SERVICE_DESCRIPTOR_CONVERT_DATASET = new HttpServiceDescriptor(
+            "cdk.dataset.convert.molecule.format",
+            "Convert molecule format",
+            "Convert molecule format for a Dataset using CDK",
             new String[]{"convert", "dataset", "format", "cdk"},
             null,
-            "default_icon.png", "dataset_convert_format",
+            "transform_molecule.png",
+            new IODescriptor[]{IODescriptors.createMoleculeObjectDataset("input")},
+            new IODescriptor[]{IODescriptors.createMoleculeObjectDataset("output")},
             new OptionDescriptor[]{
                     new OptionDescriptor<>(String.class, "query." + CDKDatasetConvertProcessor.HEADER_MOLECULE_FORMAT, "Molecule format", "Format to convert molecules to",
                             OptionDescriptor.Mode.User)
                             .withDefaultValue("mol")
-                            .withValues(new String[] {"mol", "mol:v2", "mol:v3", "smiles"})
+                            .withValues(new String[] {"mol", "mol:v2", "mol:v3", "smiles", "smiles-kekule"})
                             .withMinMaxValues(1, 1)
-            }
+            },
+            new ThinDescriptor[]{new ThinDescriptor("input", "output", false, false, null)},
+            StepDefinitionConstants.DatasetHttpExecutor.CLASSNAME,
+            "dataset_convert_format"
     );
 
     static final HttpServiceDescriptor[] ALL = new HttpServiceDescriptor[]{
@@ -60,23 +77,4 @@ public class CdkConverterServices {
             "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters",
             "http://chemservices:8080/chem-services-cdk-basic/rest/ping",
             Arrays.asList(ALL));
-
-
-    private static HttpServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
-
-        return new HttpServiceDescriptor(
-                id,
-                name,
-                description,
-                tags,
-                resourceUrl,
-                icon,
-                new IODescriptor[]{IODescriptors.createMoleculeObjectDataset("input")},
-                new IODescriptor[]{IODescriptors.createSDF("output")},
-                options,
-                StepDefinitionConstants.DatasetHttpExecutor.CLASSNAME,
-                endpoint
-        );
-    }
-
 }

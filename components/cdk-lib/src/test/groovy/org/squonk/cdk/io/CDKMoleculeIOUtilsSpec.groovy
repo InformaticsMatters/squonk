@@ -43,7 +43,10 @@ import org.squonk.data.Molecules
 import org.squonk.types.CDKSDFile
 import org.squonk.types.MoleculeObject
 import org.squonk.util.IOUtils
+import org.squonk.dataset.Dataset
 import spock.lang.Ignore
+
+import java.util.stream.Collectors
 import java.util.zip.GZIPInputStream
 import spock.lang.Specification
 
@@ -116,7 +119,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
 
         expect:
         def mol = smilesParser.parseSmiles(Molecules.ethanol.smiles)
-        String m = CDKMoleculeIOUtils.convertToFormat(mol, format)
+        String m = CDKMoleculeIOUtils.convertToFormat(mol, format, null)
         m.length() > 0
         m.contains(result)
 
@@ -332,13 +335,11 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
             //println ""
         }
 
-
         then:
         1 == 1
 
         cleanup:
         input?.close()
-
     }
 
 
@@ -395,7 +396,6 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         String result = new String(out.toByteArray())
         //println result
         result.length() > 0
-
     }
 
     void "read mol2 protein"() {
@@ -411,7 +411,6 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         then:
         mols.size() == 1
         //println mols[0].getClass().name
-
     }
 
 
@@ -435,7 +434,6 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         then:
         //println result
         result.length() > 0
-
     }
 
 
@@ -615,7 +613,7 @@ M  END
 
         when:
         def mol = CDKMoleculeIOUtils.v2000ToMolecule(Molecules.ethanol.v2000)
-        def mo = CDKMoleculeIOUtils.convertToSmiles(mol)
+        def mo = CDKMoleculeIOUtils.convertToSmiles(mol, null)
 
         then:
         mo.source == "CCO"
@@ -626,12 +624,37 @@ M  END
 
         when:
         def mol = CDKMoleculeIOUtils.v3000ToMolecule(Molecules.ethanol.v3000)
-        def mo = CDKMoleculeIOUtils.convertToSmiles(mol)
+        def mo = CDKMoleculeIOUtils.convertToSmiles(mol, null)
 
         then:
         mo.source == "CCO"
         mo.format == "smiles"
     }
+
+    void "dataset convert sdf to mol"() {
+
+        when:
+        def dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+        def result = CDKMoleculeIOUtils.convertMoleculeObjects(dataset.getStream(), "mol")
+        def list = result.collect(Collectors.toList())
+        println(list[0].source)
+
+        then:
+        list.size() == 36
+    }
+
+    void "dataset convert sdf to smiles"() {
+
+        when:
+        def dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+        def result = CDKMoleculeIOUtils.convertMoleculeObjects(dataset.getStream(), "smiles")
+        def list = result.collect(Collectors.toList())
+        println(list[0].source)
+
+        then:
+        list.size() == 36
+    }
+
 
 }
 

@@ -52,7 +52,7 @@ public class ThinDescriptor implements Serializable {
     private final Boolean preserve;
 
     /** Optional set of descriptions of which fields are required by the service for execution.
-     * If null then it is assumed that not field values are needed e.g. only the structure and its UUID needs to be sent to
+     * If null then it is assumed that no field values are needed e.g. only the structure and its UUID needs to be sent to
      * the service.
      *
      */

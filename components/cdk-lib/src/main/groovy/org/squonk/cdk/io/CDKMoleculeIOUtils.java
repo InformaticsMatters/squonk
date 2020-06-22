@@ -20,6 +20,7 @@ import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IAtomType;
 import org.openscience.cdk.io.*;
 import org.openscience.cdk.io.formats.IChemFormat;
 import org.openscience.cdk.io.listener.PropertiesListener;
@@ -30,6 +31,8 @@ import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
+import org.openscience.cdk.tools.CDKHydrogenAdder;
+import org.openscience.cdk.aromaticity.Kekulization;
 import org.squonk.cdk.CDKSettings;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.MoleculeObject;
@@ -49,6 +52,21 @@ public class CDKMoleculeIOUtils {
 
     private static final Logger LOG = Logger.getLogger(CDKMoleculeIOUtils.class.getName());
     private static final SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+
+    public static final String EMPTY_V2000 = "\n" +
+            "  CDK     0615201621\n\n" +
+            "  0  0  0  0  0  0  0  0  0  0999 V2000\n" +
+            "M  END";
+
+    public static final String EMPTY_V3000 = "\n" +
+            "  CDK     0615201621\n\n" +
+            "  0  0  0     0  0            999 V3000\n" +
+            "M  V30 BEGIN CTAB\n" +
+            "M  V30 COUNTS 0 0 0 0 0\n" +
+            "M  V30 END CTAB\n" +
+            "M  END";
+
+    private static final Kekulization KEKULIZATION = new Kekulization();
 
     private static Properties WRITER_PROPERTIES = new Properties();
     static {
@@ -174,6 +192,7 @@ public class CDKMoleculeIOUtils {
         if (reader != null) {
             reader.setReader(new StringReader(mol));
             IAtomContainer m = reader.read(new AtomContainer());
+            configureTypesAndHs(m);
             try {
                 reader.close();
             } catch (IOException e) {
@@ -186,16 +205,28 @@ public class CDKMoleculeIOUtils {
 
     public static IAtomContainer v2000ToMolecule(String molfile) throws CDKException {
         MDLV2000Reader v2000Parser = new MDLV2000Reader(new ByteArrayInputStream(molfile.getBytes()));
-        return v2000Parser.read(new AtomContainer());
+        IAtomContainer mol = v2000Parser.read(new AtomContainer());
+        configureTypesAndHs(mol);
+        return mol;
     }
 
     public static IAtomContainer v3000ToMolecule(String molfile) throws CDKException {
         MDLV3000Reader v3000Parser = new MDLV3000Reader(new ByteArrayInputStream(molfile.getBytes()));
-        return v3000Parser.read(new AtomContainer());
+        IAtomContainer mol = v3000Parser.read(new AtomContainer());
+        configureTypesAndHs(mol);
+        return mol;
     }
 
     public static IAtomContainer smilesToMolecule(String smiles) throws CDKException {
-        return smilesParser.parseSmiles(smiles);
+        IAtomContainer mol = smilesParser.parseSmiles(smiles);
+        configureTypesAndHs(mol);
+        return mol;
+    }
+
+    public static void configureTypesAndHs(IAtomContainer mol)  throws CDKException {
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+        CDKHydrogenAdder adder = CDKHydrogenAdder.getInstance(mol.getBuilder());
+        adder.addImplicitHydrogens(mol);
     }
 
     public static List<IAtomContainer> importMolecules(String s) throws CDKException {
@@ -208,6 +239,7 @@ public class CDKMoleculeIOUtils {
         List<IAtomContainer> mols = new ArrayList<>();
         if (iter != null) {
             for (IAtomContainer mol : iter) {
+                configureTypesAndHs(mol);
                 mols.add(mol);
             }
         }
@@ -347,36 +379,82 @@ public class CDKMoleculeIOUtils {
     }
 
     public static Stream<MoleculeObject> convertMoleculeObjects(Stream<MoleculeObject> input, String toFormat) throws CDKException {
-        if (toFormat != null) {
+        return convertMoleculeObjects(input, toFormat, false);
+    }
+
+    public static Stream<MoleculeObject> convertMoleculeObjects(Stream<MoleculeObject> input, String toFormat, boolean haltOnError) throws CDKException {
+        if (toFormat == null) {
             throw new IllegalArgumentException("toFormat must be specified");
         }
         Stream<MoleculeObject> results = null;
-        if (toFormat.equals("smiles")) {
+        if (toFormat.startsWith("smiles")) {
+            boolean kekulize = toFormat.equals("smiles-kekule");
             final SmilesGenerator generator = new SmilesGenerator(SmiFlavor.Absolute);
             results = input.map(mo -> {
                 try {
-                    IAtomContainer mol = readMolecule(mo.getSource());
+                    IAtomContainer mol = readMolecule(mo.getSource(), mo.getFormat());
+                    if (kekulize) {
+                        KEKULIZATION.kekulize(mol);
+                    }
+                    // TODO - allow to implement different aromaticity models
                     String smi = generator.create(mol);
-                    return new MoleculeObject(smi, "smiles");
-                } catch (CDKException e) {
-                    throw new RuntimeException("Failed to convert structure to format " + toFormat, e);
+                    return new MoleculeObject(mo.getUUID(), smi, "smiles");
+                } catch (Exception e) {
+                    if (haltOnError) {
+                        String msg = "Failed to write molecule " + mo.getUUID();
+                        if (mo.getFormat().startsWith("smiles")) {
+                            msg += ". Original smiles: " + mo.getSource();
+                        }
+                        throw new RuntimeException(msg, e);
+                    } else {
+                        LOG.warning("Failed to write molecule " + mo.getUUID() + " " + e.getLocalizedMessage());
+                        MoleculeObject emptyMol = new MoleculeObject(mo.getUUID(), "", "smiles");
+                        emptyMol.putValue(MoleculeObject.INVALID_FORMAT_PROP, "Unable to convert format. Replaced with empty molecule");
+                        return emptyMol;
+                    }
                 }
             });
-        } else if (toFormat.equals("mol")) {
+        } else if (toFormat.startsWith("mol")) {
             results = input.map(mo -> {
                 try {
-                    IAtomContainer mol = readMolecule(mo.getSource());
+                    IAtomContainer mol = readMolecule(mo.getSource(), mo.getFormat());
+                    // molfile format does not support aromatic atoms except for query molecules
+                    // so convert to Kekule form
+                    KEKULIZATION.kekulize(mol);
+                    UUID uuid = mo.getUUID();
                     MoleculeObject result;
                     if (toFormat.startsWith("mol:v2")) {
-                        result = convertToMolfileV2000(mol);
+                        result = convertToMolfileV2000(mol, uuid);
                     } else if (toFormat.startsWith("mol:v3")) {
-                        result = convertToMolfileV3000(mol);
+                        result = convertToMolfileV3000(mol, uuid);
+                    } else if (toFormat.equals("mol")) {
+                        result = convertToMolfile(mol, uuid);
                     } else {
-                        result = convertToMolfile(mol);
+                        throw new IllegalArgumentException("Unsupported format: " + toFormat);
                     }
                     return result;
                 } catch (Exception e) {
-                    throw new RuntimeException("Failed to convert structure to format " + toFormat, e);
+                    if (haltOnError) {
+                        String msg = "Failed to write molecule " + mo.getUUID();
+                        if (mo.getFormat().startsWith("smiles")) {
+                            msg += ". Original smiles: " + mo.getSource();
+                        }
+                        throw new RuntimeException(msg, e);
+                    } else {
+                        LOG.log(Level.WARNING, "Failed to write molecule " + mo.getUUID(), e);
+                        String empty;
+                        String format;
+                        if (toFormat.startsWith("mol:v3")) {
+                            empty = EMPTY_V3000;
+                            format = "mol:v3";
+                        } else {
+                            empty = EMPTY_V2000;
+                            format = "mol:v2";
+                        }
+                        MoleculeObject emptyMol = new MoleculeObject(mo.getUUID(), empty, format);
+                        emptyMol.putValue(MoleculeObject.INVALID_FORMAT_PROP, "Unable to convert format. Replaced with empty molecule");
+                        return emptyMol;
+                    }
                 }
             });
         } else {
@@ -386,67 +464,87 @@ public class CDKMoleculeIOUtils {
         return results;
     }
 
-    public static MoleculeObject convertToFormat(IAtomContainer mol, String format) throws IOException, CDKException {
+    public static MoleculeObject convertToFormat(IAtomContainer mol, String format, UUID uuid) throws IOException, CDKException {
         if (format.equals("smiles")) {
-            return convertToSmiles(mol);
+            return convertToSmiles(mol, uuid);
         } else if (format.equals("mol") || format.startsWith("mol:")) {
             if (format.startsWith("mol:v2")) {
-                return convertToMolfileV2000(mol);
+                return convertToMolfileV2000(mol, uuid);
             } else if (format.startsWith("mol:v3")) {
-                return convertToMolfileV3000(mol);
+                return convertToMolfileV3000(mol, uuid);
             } else {
-                return convertToMolfile(mol);
+                return convertToMolfile(mol, uuid);
             }
         } else {
             throw new IllegalArgumentException("Unsupported format: " + format);
         }
     }
 
-    public static MoleculeObject convertToSmiles(IAtomContainer mol) throws CDKException {
+    public static MoleculeObject convertToSmiles(IAtomContainer mol, UUID uuid) throws CDKException {
         SmilesGenerator generator = new SmilesGenerator(SmiFlavor.Absolute);
         String smi = generator.create(mol);
-        return new MoleculeObject(smi, "smiles");
-    }
-
-    public static MoleculeObject convertToSmiles(IAtomContainer mol, SmilesGenerator generator) throws CDKException {
-        String smi = generator.create(mol);
-        return new MoleculeObject(smi, "smiles");
-    }
-
-    public static MoleculeObject convertToMolfile(IAtomContainer mol) throws IOException, CDKException {
-        try {
-            return convertToMolfileV2000(mol);
-        } catch (Exception e) {
-            return convertToMolfileV3000(mol);
+        if (uuid == null) {
+            return new MoleculeObject(smi, "smiles");
+        } else {
+            return new MoleculeObject(uuid, smi, "smiles");
         }
     }
 
-    public static MoleculeObject convertToMolfileV2000(IAtomContainer mol) throws IOException, CDKException {
+    public static MoleculeObject convertToSmiles(IAtomContainer mol, SmilesGenerator generator, UUID uuid) throws CDKException {
+        String smi = generator.create(mol);
+        if (uuid == null) {
+            return new MoleculeObject(smi, "smiles");
+        } else {
+            return new MoleculeObject(uuid, smi, "smiles");
+        }
+    }
+
+    public static MoleculeObject convertToMolfile(IAtomContainer mol, UUID uuid) throws IOException, CDKException {
+        try {
+            return convertToMolfileV2000(mol, uuid);
+        } catch (Exception e) {
+            return convertToMolfileV3000(mol, uuid);
+        }
+    }
+
+    public static MoleculeObject convertToMolfileV2000(IAtomContainer mol, UUID uuid) throws IOException, CDKException {
         StringWriter writer = new StringWriter();
         try (MDLV2000Writer mdl = createMDLV2000Writer(writer)) {
             mdl.write(mol);
         }
         String source = writer.toString();
-        return new MoleculeObject(source, "mol:v2");
+        if (uuid == null) {
+            return new MoleculeObject(source, "mol:v2");
+        } else {
+            return new MoleculeObject(uuid, source, "mol:v2");
+        }
     }
 
-    public static MoleculeObject convertToMolfileV3000(IAtomContainer mol) throws IOException, CDKException {
+    public static MoleculeObject convertToMolfileV3000(IAtomContainer mol, UUID uuid) throws IOException, CDKException {
         StringWriter writer = new StringWriter();
         try (MDLV3000Writer mdl = createMDLV3000Writer(writer)) {
             mdl.write(mol);
         }
         String source = writer.toString();
-        return new MoleculeObject(source, "mol:v3");
+        if (uuid == null) {
+            return new MoleculeObject(source, "mol:v3");
+        } else {
+            return new MoleculeObject(uuid, source, "mol:v3");
+        }
     }
 
 
-    public static MoleculeObject convertMolecule(IAtomContainer mol, DefaultChemObjectWriter objectWriter, String formatString) throws IOException, CDKException {
+    public static MoleculeObject convertMolecule(IAtomContainer mol, DefaultChemObjectWriter objectWriter, String formatString, UUID uuid) throws IOException, CDKException {
         StringWriter writer = new StringWriter();
         objectWriter.setWriter(writer);
         objectWriter.write(mol);
         writer.close();
         String source = writer.toString();
-        return new MoleculeObject(source, formatString);
+        if (uuid == null) {
+            return new MoleculeObject(source, formatString);
+        } else {
+            return new MoleculeObject(uuid, source, formatString);
+        }
     }
 
 }
