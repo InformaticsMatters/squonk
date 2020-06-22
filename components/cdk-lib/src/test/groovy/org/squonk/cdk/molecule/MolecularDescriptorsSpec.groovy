@@ -33,10 +33,10 @@ class MolecularDescriptorsSpec extends Specification {
 
         when:
         MolecularDescriptors.wienerNumbers(mo)
-        
+
         then:
-        mo.getValue(MolecularDescriptors.WIENER_PATH) != null
-        mo.getValue(MolecularDescriptors.WIENER_POLARITY) != null
+        mo.getValue(MolecularDescriptors.WIENER_PATH) > 0
+        mo.getValue(MolecularDescriptors.WIENER_POLARITY) > 0
     }
     
     void "alogp"() {
@@ -46,10 +46,10 @@ class MolecularDescriptorsSpec extends Specification {
 
         when:
         MolecularDescriptors.aLogP(mo)
-        
+
         then:
-        mo.getValue(MolecularDescriptors.ALOGP_ALOPG) != null
-        mo.getValue(MolecularDescriptors.ALOGP_AMR) != null
+        mo.getValue(MolecularDescriptors.ALOGP_ALOPG) > 0
+        mo.getValue(MolecularDescriptors.ALOGP_AMR) > 0
     }
     
     void "xlogp"() {
@@ -61,7 +61,7 @@ class MolecularDescriptorsSpec extends Specification {
         MolecularDescriptors.xLogP(mo)
         
         then:
-        mo.getValue(MolecularDescriptors.XLOGP_XLOGP) != null
+        mo.getValue(MolecularDescriptors.XLOGP_XLOGP) > 0
     }
     
     void "hbond acceptor count"() {
@@ -73,7 +73,7 @@ class MolecularDescriptorsSpec extends Specification {
         MolecularDescriptors.hbondAcceptorCount(mo)
         
         then:
-        mo.getValue(MolecularDescriptors.HBOND_ACCEPTOR_COUNT) != null
+        mo.getValue(MolecularDescriptors.HBOND_ACCEPTOR_COUNT) == 2
     }
     
     void "hbond donor count"() {
@@ -85,7 +85,7 @@ class MolecularDescriptorsSpec extends Specification {
         MolecularDescriptors.hbondDonorCount(mo)
         
         then:
-        mo.getValue(MolecularDescriptors.HBOND_DONOR_COUNT) != null
+        mo.getValue(MolecularDescriptors.HBOND_DONOR_COUNT) == 0
     }
     
 }
