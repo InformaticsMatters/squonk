@@ -150,6 +150,12 @@ public interface StepDefinitionConstants {
         String OPTION_RANDOMISE = "randomise";
     }
 
+    interface DatasetSplitUsingExpression {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetSplitUsingExpressionStep";
+        String OPTION_FIELD = "field";
+        String OPTION_EXPR = "expression";
+    }
+
     interface UntrustedGroovyDatasetScript {
          String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedGroovyDatasetScriptStep";
          String OPTION_SCRIPT = "script";

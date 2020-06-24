@@ -64,7 +64,7 @@ class DatasetSplitOnNullStepSpec extends Specification {
     }
 
 
-    void "sort tests"() {
+    void "split tests"() {
 
         when:
         DefaultCamelContext context = new DefaultCamelContext()
@@ -78,6 +78,5 @@ class DatasetSplitOnNullStepSpec extends Specification {
         then:
         pass.items.size() == 3
         fail.items.size() == 1
-
     }
 }
