@@ -123,8 +123,13 @@ public class DatasetSplitStep<P extends BasicObject> extends AbstractDatasetSpli
                 }
                 fail = items;
             } else {
-                pass = items.subList(0, cuttoff);
-                fail = items.subList(cuttoff, items.size());
+                if (cuttoff > items.size()) {
+                    pass = items;
+                    fail = Collections.emptyList();
+                } else {
+                    pass = items.subList(0, cuttoff);
+                    fail = items.subList(cuttoff, items.size());
+                }
             }
         }
 
@@ -135,6 +140,8 @@ public class DatasetSplitStep<P extends BasicObject> extends AbstractDatasetSpli
 
         DatasetMetadata passMeta = input.getMetadata().clone();
         DatasetMetadata failMeta = input.getMetadata().clone();
+        passMeta.setSize(pass.size());
+        failMeta.setSize(fail.size());
 
         Map<String, Object> results = new LinkedHashMap(2);
         results.put(StepDefinitionConstants.VARIABLE_OUTPUT_PASS, new Dataset(pass, passMeta));

@@ -29,9 +29,9 @@ class DatasetSplitOnNullStepSpec extends Specification {
 
     def createDataset() {
         def mols = [
-                new BasicObject([idx: 0, a: 11, b: 'red',    c: 7, d: 5]),
-                new BasicObject([idx: 1, a: 23, b: 'blue',   c: 5]),
-                new BasicObject([idx: 2, a: 7,  b: 'green',  c: 5, d: 7]),
+                new BasicObject([idx: 0, a: 11, b: 'red',    c: 7, d: 5, e: "one"]),
+                new BasicObject([idx: 1, a: 23, b: 'blue',   c: 5, e: "two"]),
+                new BasicObject([idx: 2, a: 7,  b: 'green',  c: 5, d: 7, e: ""]),
                 new BasicObject([idx: 3, a: 17, b: 'orange', c: 1, d: 3])
         ]
 
@@ -78,5 +78,21 @@ class DatasetSplitOnNullStepSpec extends Specification {
         then:
         pass.items.size() == 3
         fail.items.size() == 1
+    }
+
+    void "split tests empty string"() {
+
+        when:
+        DefaultCamelContext context = new DefaultCamelContext()
+        DatasetSplitOnNullStep step = createStep("e", "splitonnull tests", context)
+        Dataset input = createDataset()
+
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
+        def pass = resultsMap["pass"]
+        def fail = resultsMap["fail"]
+
+        then:
+        pass.items.size() == 2
+        fail.items.size() == 2
     }
 }

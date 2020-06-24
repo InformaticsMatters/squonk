@@ -79,7 +79,18 @@ public class DatasetSplitOnNullStep<P extends BasicObject> extends AbstractDatas
 
         statusMessage = "Splitting ...";
         Map<Boolean, List<P>> groups = input.getStream()
-                .collect(Collectors.partitioningBy(mo -> mo.getValue(fieldName) != null));
+                .collect(Collectors.partitioningBy(mo -> {
+                    Object value = mo.getValue(fieldName);
+                    if (value == null) {
+                        return false;
+                    }
+                    if (value instanceof String) {
+                        String s = (String)value;
+                        return !s.isEmpty();
+                    } else {
+                        return true;
+                    }
+                }));
 
         statusMessage = groups.get(true).size() + " present and " + groups.get(false).size() + " absent";
 
