@@ -156,6 +156,11 @@ public interface StepDefinitionConstants {
         String OPTION_EXPR = "expression";
     }
 
+    interface DatasetFieldFilter {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetFieldFilterStep";
+        String OPTION_FIELDS = "fields";
+    }
+
     interface UntrustedGroovyDatasetScript {
          String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedGroovyDatasetScriptStep";
          String OPTION_SCRIPT = "script";

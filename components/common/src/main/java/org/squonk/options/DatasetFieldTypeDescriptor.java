@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,17 +30,29 @@ public class DatasetFieldTypeDescriptor extends SimpleTypeDescriptor<String> imp
 
     private final String inputName;
     private final Class[] typeFilters;
+    private final boolean multiple;
 
     public DatasetFieldTypeDescriptor(
             @JsonProperty("inputName") String inputName,
-            @JsonProperty("typeFilters") Class[] typeFilters
+            @JsonProperty("typeFilters") Class[] typeFilters,
+            @JsonProperty("multiple") boolean multiple
            ) {
         super(String.class);
         this.inputName = inputName == null ? "input" : inputName;
         this.typeFilters = typeFilters;
+        this.multiple = multiple;
     }
 
-    /** Creates a descriptor using the default input name of "input"
+    /** Create a single select descriptor
+     *
+     * @param inputName
+     * @param typeFilters
+     */
+    public DatasetFieldTypeDescriptor(String inputName, Class[] typeFilters) {
+        this(inputName, typeFilters, false);
+    }
+
+    /** Creates a single select descriptor using the default input name of "input"
      *
      * @param typeFilters
      */
@@ -48,7 +60,7 @@ public class DatasetFieldTypeDescriptor extends SimpleTypeDescriptor<String> imp
         this("input", typeFilters);
     }
 
-    /** Creates a descriptor using the default input name of "input" and no class filtering
+    /** Creates a single select descriptor using the default input name of "input" and no class filtering
      *
      */
     public DatasetFieldTypeDescriptor() {
@@ -63,6 +75,9 @@ public class DatasetFieldTypeDescriptor extends SimpleTypeDescriptor<String> imp
         return typeFilters;
     }
 
+    public boolean isMultiple() {
+        return multiple;
+    }
 
     public boolean filter(String name, Class type) {
         if (typeFilters == null || typeFilters.length == 0) {

@@ -60,7 +60,7 @@ public class KeycloakUserDetailsManager extends DefaultUserDetailsManager {
                 roles = Collections.emptySet();
             } else {
                 roles = session.getToken().getRealmAccess().getRoles();
-                LOG.info("User " + username +
+                LOG.fine("User " + username +
                         " is in these roles: " +
                         roles.stream().collect(Collectors.joining(",")));
             }
@@ -73,7 +73,7 @@ public class KeycloakUserDetailsManager extends DefaultUserDetailsManager {
                         idToken.getGivenName(),
                         idToken.getFamilyName(),
                         roles);
-                LOG.info("Created UserDetails from Keycloak token: " + ud.toString());
+                LOG.fine("Created UserDetails from Keycloak token: " + ud.toString());
                 return ud;
             }
         }

@@ -49,7 +49,8 @@ public class StandardServiceDescriptors {
                 DatasetSplitOnNullStep.SERVICE_DESCRIPTOR,
                 SimpleSorterStep.SERVICE_DESCRIPTOR,
                 DatasetSorterStep.SERVICE_DESCRIPTOR,
-                DatasetSplitUsingExpressionStep.SERVICE_DESCRIPTOR
+                DatasetSplitUsingExpressionStep.SERVICE_DESCRIPTOR,
+                DatasetFieldFilterStep.SERVICE_DESCRIPTOR
                 // add these once the portal has been refactored to used these as services
                 //BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR,
                 //ChemblActivitiesFetcherStep.SERVICE_DESCRIPTOR,
