@@ -155,7 +155,7 @@ subprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.5.1'
+    gradleVersion = '4.2.1'
 }
 
 project.ext.set('dockerHost', getDockerHost())
