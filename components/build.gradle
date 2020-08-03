@@ -61,7 +61,7 @@ allprojects {
     project.ext.set('cdkVersion', '2.2')
     project.ext.set('groovyVersion', '2.4.20')
     project.ext.set('weldVersion', '2.3.5.Final')
-    project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
+    project.ext.set('postgresDriverVersion', '42.2.14')
     project.ext.set('flywayVersion', '3.2.1')
 
     // Define the tag label for docker images.
