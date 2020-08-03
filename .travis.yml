@@ -1,20 +1,30 @@
 ---
 
-# The Squonk Travis CI build script.
-#
-# For Gradle build hints checkout the following: -
-#   https://guides.gradle.org/executing-gradle-builds-on-travisci
-#   https://docs.travis-ci.com/user/languages/java/
-
 # -----------------
 # Control variables (Travis Settings)
 # -----------------
 #
+# To build (and publish) Squonk you will need the following environment
+# variables set in Travis Settings: -
+#
+#   DOCKER_USERNAME     Typically 'imtravis'
+#   DOCKER_PASSWORD
+#
+#   ORG_GRADLE_PROJECT_cxnMavenRepositoryUrl
+#   ORG_GRADLE_PROJECT_cxnMavenUser
+#   ORG_GRADLE_PROJECT_cxnMavenPassword
+#
+#   SQUONK_DECRYPTION_KEY
+#
 # Set the following to run AWX jobs (deploy Squonk automatically): -
 #
-# AWX_HOST              The AWX server hostname
-# AWX_USER              An AWX user that's able to execute the chosen AWX jobs
-# AWX_USER_PASSWORD     The AWX user's password
+#   AWX_HOST            The AWX server hostname
+#   AWX_USER            An AWX user that's able to execute the chosen AWX jobs
+#   AWX_USER_PASSWORD   The AWX user's password
+
+# For Gradle build hints checkout the following: -
+#   https://guides.gradle.org/executing-gradle-builds-on-travisci
+#   https://docs.travis-ci.com/user/languages/java/
 
 os: linux
 language: java
