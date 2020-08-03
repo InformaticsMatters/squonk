@@ -59,8 +59,8 @@ allprojects {
     // https://github.com/apache/camel/blob/master/parent/pom.xml
     project.ext.set('jacksonVersion', '2.10.5')
     project.ext.set('cdkVersion', '2.2')
-    project.ext.set('groovyVersion', '2.4.4')
-    project.ext.set('weldVersion', '2.3.2.Final')
+    project.ext.set('groovyVersion', '2.4.20')
+    project.ext.set('weldVersion', '2.3.5.Final')
     project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
     project.ext.set('flywayVersion', '3.2.1')
 
