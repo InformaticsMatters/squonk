@@ -75,8 +75,11 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_DEBUG_MODE_ENV_NAME = "SQUONK_POD_DEBUG_MODE";
     private static final String POD_DEBUG_MODE_DEFAULT = "0";
 
-    private static final String POD_CPU_RESOURCE_NAME = "SQUONK_POD_CPU_RESOURCE";
+    private static final String POD_CPU_RESOURCE_ENV_NAME = "SQUONK_POD_CPU_RESOURCE";
     private static final String POD_CPU_RESOURCE_DEFAULT = "1";
+
+    private static final String POD_IMAGE_PULL_POLICY_ENV_NAME = "SQUONK_POD_IMAGE_PULL_POLICY";
+    private static final String POD_IMAGE_PULL_POLICY_DEFAULT = "IfNotPresent";
 
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
@@ -89,7 +92,7 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String OS_POD_BASE_NAME;
     private static final String OS_POD_ENVIRONMENT;
     private static final String OS_DATA_VOLUME_PVC_NAME;
-    private static final String OS_IMAGE_PULL_POLICY = "IfNotPresent";
+    private static final String OS_IMAGE_PULL_POLICY;
     private static final String OS_POD_RESTART_POLICY = "Never";
 
     // The OpenShift Job is given a period of time to start.
@@ -1016,8 +1019,13 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // And the Pod resources (expected to define CPU request and limit)
         OS_POD_CPU_RESOURCE = IOUtils
-                .getConfiguration(POD_CPU_RESOURCE_NAME, POD_CPU_RESOURCE_DEFAULT);
+                .getConfiguration(POD_CPU_RESOURCE_ENV_NAME, POD_CPU_RESOURCE_DEFAULT);
         LOG.info("OS_POD_CPU_RESOURCE=" + OS_POD_CPU_RESOURCE);
+
+        // And the Pod Pull Policy
+        OS_IMAGE_PULL_POLICY = IOUtils
+                .getConfiguration(POD_IMAGE_PULL_POLICY_ENV_NAME, POD_IMAGE_PULL_POLICY_DEFAULT);
+        LOG.info("OS_IMAGE_PULL_POLICY=" + OS_IMAGE_PULL_POLICY);
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).
