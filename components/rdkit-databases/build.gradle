@@ -74,7 +74,7 @@ docker {
     certPath = dockerCertPath
 
     javaApplication {
-        baseImage = 'informaticsmatters/rdkit_java:Release_2017_03_1'
+        baseImage = 'informaticsmatters/rdkit_java:Release_2020_03_1'
         maintainer = 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
         tag = "squonk/chemcentral-loader:${dockerImageTag}"
     }
