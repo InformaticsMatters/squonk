@@ -75,7 +75,7 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_DEBUG_MODE_ENV_NAME = "SQUONK_POD_DEBUG_MODE";
     private static final String POD_DEBUG_MODE_DEFAULT = "0";
 
-    private static final String POD_CPU_RESOURCE_NAME = "SQUONK_POD_CPU_RESOURCE";
+    private static final String POD_CPU_RESOURCE_ENV_NAME = "SQUONK_POD_CPU_RESOURCE";
     private static final String POD_CPU_RESOURCE_DEFAULT = "1";
 
     private static final String POD_IMAGE_PULL_POLICY_ENV_NAME = "SQUONK_POD_IMAGE_PULL_POLICY";
@@ -1019,7 +1019,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // And the Pod resources (expected to define CPU request and limit)
         OS_POD_CPU_RESOURCE = IOUtils
-                .getConfiguration(POD_CPU_RESOURCE_NAME, POD_CPU_RESOURCE_DEFAULT);
+                .getConfiguration(POD_CPU_RESOURCE_ENV_NAME, POD_CPU_RESOURCE_DEFAULT);
         LOG.info("OS_POD_CPU_RESOURCE=" + OS_POD_CPU_RESOURCE);
 
         // And the Pod Pull Policy
