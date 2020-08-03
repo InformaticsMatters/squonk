@@ -6,6 +6,16 @@
 #   https://guides.gradle.org/executing-gradle-builds-on-travisci
 #   https://docs.travis-ci.com/user/languages/java/
 
+# -----------------
+# Control variables (Travis Settings)
+# -----------------
+#
+# Set the following to run AWX jobs (deploy Squonk automatically): -
+#
+# AWX_HOST              The AWX server hostname
+# AWX_USER              An AWX user that's able to execute the chosen AWX jobs
+# AWX_USER_PASSWORD     The AWX user's password
+
 os: linux
 language: java
 jdk: openjdk8
@@ -15,28 +25,33 @@ services:
 
 stages:
 
-  # The 'compile' stage
+  # The 'compile' stage
   # - Compiles the code (a quick initial stage).
 - name: compile
 
-  # The 'test' stage
+  # The 'test' stage
   # - Compiles the code and also runs unit tests.
 - name: test
 
-  # The 'docker' stage
+  # The 'docker' stage
   # - Assembles docker images to verify that they can be constructed.
   #   It does not push these images - it's simply an assembly-check.
   #   We do this if we're not the result of a tag and we're not on master.
 - name: docker
   if: tag IS NOT present AND branch != master
 
-  # The 'publish' stage
+  # The 'publish' stage
   # - Assembles docker images and pushes the resultant images to Docker Hub.
   #   We execute the 'publish' stage and always publish an image
   #   on master or when tagged. When tagged the tag value is used for the
   #   image tag, when not tagged the published image tag is 'latest'.
 - name: publish
   if: tag IS present OR branch == master
+
+  # The 'trigger' stage
+  # - triggers jobs on an AWX server.
+- name: trigger staging
+  if:  (tag IS present OR branch == master) AND env(AWX_HOST) is present
 
 install:
 - pushd "$TRAVIS_BUILD_DIR"/components
@@ -52,6 +67,11 @@ cache:
   directories:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
+
+env:
+  global:
+  # The origin of the AWX trigger code
+  - AWX_TRIGGER_ORIGIN=https://raw.githubusercontent.com/informaticsmatters/trigger-awx/1.0.0
 
 jobs:
   include:
@@ -90,3 +110,18 @@ jobs:
     name: Docker Build and Push (branch/tag)
     script: scripts/publish-tag-branch.sh
     if: tag IS present AND branch != master
+
+  # Trigger-stage jobs
+
+  - stage: trigger
+    name: Trigger (master/latest)
+    language: python
+    python: '3.8'
+    install: skip
+    script:
+    - curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/requirements.txt --output trigger-awx-requirements.txt
+    - curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/trigger-awx-tag.sh --output trigger-awx-tag.sh
+    - pip install -r trigger-awx-requirements.txt
+    - chmod +x trigger-awx-tag.sh
+    - ./trigger-awx-tag.sh latest sq_image_tag "Squonk -staging-"
+    if: tag IS NOT present AND branch == master AND env(AWX_USER_PASSWORD) is present

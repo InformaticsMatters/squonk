@@ -1,4 +1,4 @@
-# Scripts (for building)
+# Scripts (for building)
 Scripts for use (mainly) by Travis.
 
 Unlike GitLab, Travis does not permit the execution of multiple commands in

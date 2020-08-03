@@ -7,7 +7,7 @@
 
 set -eo pipefail
 
-# Set the project path
+# Set the project path
 if [[ -z "$TRAVIS_BUILD_DIR" ]]; then
   PROJECT_DIR="$PWD"
 else
