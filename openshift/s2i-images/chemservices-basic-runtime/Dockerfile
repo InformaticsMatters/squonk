@@ -1,4 +1,4 @@
-FROM informaticsmatters/rdkit-tomcat-debian:Release_2020_03_1
+FROM informaticsmatters/rdkit-tomcat-debian:Release_2020_03_4
 LABEL maintainer="achristie@informaticsmatters.com"
 
 # Install S2I Scripts ---------------------------------------------------------

@@ -32,7 +32,7 @@ parameters:
 
 - name: POSTGRES_IMAGE_TAG
   description: The version tag for the RDKIT container version
-  value: Release_2020_03_1
+  value: Release_2020_03_4
 
 - name: POSTGRES_SERVICE
   displayName: PostgreSQL RDKit cartridge service name

@@ -6,7 +6,7 @@ docker pull rabbitmq:3-management
 docker pull nginx:1.13
 docker pull jboss/keycloak:4.8.3.Final
 
-docker pull informaticsmatters/rdkit-cartridge-debian:Release_2020_03_1
+docker pull informaticsmatters/rdkit-cartridge-debian:Release_2020_03_4
 docker pull informaticsmatters/rdkit:latest
 docker pull informaticsmatters/rdkit_pipelines:latest
 docker pull informaticsmatters/rdkit_nextflow:latest

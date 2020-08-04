@@ -55,7 +55,7 @@ services:
     # based on PostgreSQL 11 with RDKit cartridge support
     #
     postgres:
-        image: informaticsmatters/rdkit-cartridge-debian:Release_2020_03_1
+        image: informaticsmatters/rdkit-cartridge-debian:Release_2020_03_4
         volumes:
         - ./images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro,Z
         - ./images/postgres/docker-healthcheck.sh:/usr/local/bin/docker-healthcheck.sh:ro,Z
