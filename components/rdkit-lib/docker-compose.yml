@@ -3,7 +3,7 @@ version: '2.1'
 services:
 
     chemcentral:
-        image: informaticsmatters/rdkit_cartridge:Release_2017_09_1
+        image: informaticsmatters/rdkit-cartridge-debian:Release_2020_03_4
         volumes:
         - ./init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro,Z
         environment:

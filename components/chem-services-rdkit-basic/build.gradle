@@ -77,7 +77,7 @@ docker {
 task buildDockerFile(type: Dockerfile, dependsOn: war) {
     
     destFile = project.file('build/Dockerfile')
-    from "informaticsmatters/rdkit_java_tomcat"
+    from "informaticsmatters/rdkit-tomcat-debian:Release_2020_03_4"
 
     label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
     label(['commit-hash': "${imageCommitHash}"])

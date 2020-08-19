@@ -32,7 +32,7 @@ parameters:
 
 - name: POSTGRES_IMAGE_TAG
   description: The version tag for the RDKIT container version
-  value: Release_2017_09_2
+  value: Release_2020_03_4
 
 - name: POSTGRES_SERVICE
   displayName: PostgreSQL RDKit cartridge service name
@@ -153,7 +153,7 @@ objects:
         serviceAccountName: ${CCDB_SA}
 
         containers:
-        - image: informaticsmatters/rdkit_cartridge:${POSTGRES_IMAGE_TAG}
+        - image: informaticsmatters/rdkit-cartridge-debian:${POSTGRES_IMAGE_TAG}
           name: ${POSTGRES_SERVICE}
           env:
           - name: POSTGRES_USER
