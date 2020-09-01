@@ -81,7 +81,7 @@ cache:
 env:
   global:
   # The origin of the AWX trigger code
-  - AWX_TRIGGER_ORIGIN=https://raw.githubusercontent.com/informaticsmatters/trigger-awx/1.0.0
+  - AWX_TRIGGER_ORIGIN=https://raw.githubusercontent.com/informaticsmatters/trigger-awx/1.0.2
 
 jobs:
   include:
