@@ -63,8 +63,14 @@ stages:
 - name: trigger
   if:  (tag IS present OR branch == master) AND env(AWX_HOST) is present
 
+# Install phase.
+#
+# Before doing _anything_ some (encrypted) license files will be required.
+# We need the ChemAxon license (in HOME and in the deployment)
+# and the ChemAxon library.
 install:
 - pushd "$TRAVIS_BUILD_DIR"/components
+- ./gradlew installChemaxonLicenseToHome
 - ./gradlew installChemaxonLicense
 - ./gradlew installChemaxonLibrary
 - popd
