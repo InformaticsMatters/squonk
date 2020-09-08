@@ -7,7 +7,7 @@
 
 set -eo pipefail
 
-# Set the project path
+# Set the project path
 if [[ -z "$TRAVIS_BUILD_DIR" ]]; then
   PROJECT_DIR="$PWD"
 else
@@ -31,8 +31,8 @@ fi
 
 # Define the working directory for cell execution.
 # This is used as a default when no explicit directory is provided.
-# Some unit tests expect to create this directory, delete it
-# and write files to it so it has to be somehere Travis will let us write.
+# Some unit tests expect to create this directory, delete it
+# and write files to it so it has to be somewhere Travis will let us write.
 export SQUONK_DOCKER_WORK_DIR="$PROJECT_DIR"/tmp
 
 pushd "$PROJECT_DIR"/components || exit
