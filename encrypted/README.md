@@ -4,7 +4,8 @@ are encrypted with **gpg** where all files here should have the default
 `.gpg` suffix.
 
 You must have the `SQUONK_DECRYPTION_KEY` environment variable
-defined in order to build and test the application.
+defined in order to build and test the application (see KeePassXC
+**Squonk -> SQUONK_DECRYPTION_KEY**).
 
 ## Encrypting files
 Put the file containing sensitive data in a sensibly-named sub-directory of
