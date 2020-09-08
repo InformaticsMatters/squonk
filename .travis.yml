@@ -73,7 +73,6 @@ stages:
 install:
 - pushd "$TRAVIS_BUILD_DIR"/components
 - ./gradlew installChemaxonLicenseToHome
-- ./gradlew installChemaxonLicense
 - ./gradlew installChemaxonLibrary
 - popd
 
@@ -120,14 +119,9 @@ jobs:
     if: tag IS NOT present AND branch == master
 
   - stage: publish
-    name: Docker Build and Push (master/tag)
-    script: scripts/publish-tag-master.sh
-    if: tag IS present AND branch == master
-
-  - stage: publish
-    name: Docker Build and Push (branch/tag)
-    script: scripts/publish-tag-branch.sh
-    if: tag IS present AND branch != master
+    name: Docker Build and Push (tag)
+    script: scripts/publish-tag.sh
+    if: tag IS present
 
   # Trigger-stage jobs
 
