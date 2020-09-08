@@ -38,10 +38,12 @@ stages:
   # The 'compile' stage
   # - Compiles the code (a quick initial stage).
 - name: compile
+  if: tag IS NOT present
 
   # The 'test' stage
   # - Compiles the code and also runs unit tests.
 - name: test
+  if: tag IS NOT present
 
   # The 'docker' stage
   # - Assembles docker images to verify that they can be constructed.
@@ -98,12 +100,11 @@ jobs:
     name: Compile
     script: scripts/compile.sh
 
-  # Test-stage jobs (not run when tagged)...
+  # Test-stage jobs...
 
   - stage: test
     name: Unit Test
     script: scripts/test.sh
-    if: tag IS NOT present
 
   # Docker-stage jobs...
 
