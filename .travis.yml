@@ -92,11 +92,12 @@ jobs:
     name: Compile
     script: scripts/compile.sh
 
-  # Test-stage jobs...
+  # Test-stage jobs (not run when tagged)...
 
   - stage: test
     name: Unit Test
     script: scripts/test.sh
+    if: tag IS NOT present
 
   # Docker-stage jobs...
 
