@@ -113,6 +113,21 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         Molecules.ethanol.v3000  | "mol"
     }
 
+    void "read moleculeobjects"() {
+
+        when:
+        Dataset dataset = Molecules.datasetFromJSON(Molecules.DHFR_STANDARDIZED_JSON)
+        int count = 0
+        dataset.items.each() {
+            def mol = CDKMoleculeIOUtils.readMolecule(it.source, null)
+            count++
+        }
+
+
+        then:
+        count == 756
+    }
+
     void "cdk convert molecule formats"() {
 
         SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance())

@@ -119,7 +119,7 @@ public class MolecularDescriptors {
         if (result == null) {
             IAtomContainer mol = mo.getRepresentation(IAtomContainer.class.getName(), IAtomContainer.class);
             if (mol == null) {
-                mol = CDKMoleculeIOUtils.readMolecule(mo.getSource());
+                mol = CDKMoleculeIOUtils.readMolecule(mo.getSource(), mo.getFormat());
             }
             if (mol != null) {
                 AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);

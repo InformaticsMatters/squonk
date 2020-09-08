@@ -30,6 +30,7 @@ class Molecules {
     static final String BUILDING_BLOCKS_SDF = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
     static final String SCREENING_COMPOUNDS_SDF = "../../data/testfiles/Screening_Collection.sdf.gz"
     static final String DHFR_STANDARDIZED_SDF = "../../data/testfiles/dhfr_standardized.sdf.gz"
+    static final String DHFR_STANDARDIZED_JSON = "../../data/testfiles/dhfr_standardized.json.gz"
     static final String KINASE_INHIBS_SDF = "../../data/testfiles/Kinase_inhibs.sdf.gz"
     static final String SMILES_10000 = "../../data/testfiles/nci10000.smiles"
     static final String SMILES_1000 = "../../data/testfiles/nci1000.smiles"
@@ -216,6 +217,11 @@ M  END
     static Dataset<MoleculeObject> datasetFromSDF(String file) {
         SDFReader reader = new SDFReader(new FileInputStream(file))
         return new MoleculeObjectDataset(reader.asStream()).getDataset()
+    }
+
+    static Dataset<MoleculeObject> datasetFromJSON(String file) {
+        InputStream is = new FileInputStream(file)
+        return new Dataset(MoleculeObject.class, is)
     }
 
 }
