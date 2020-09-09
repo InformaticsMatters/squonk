@@ -3,7 +3,7 @@
 # A script used by Travis
 #
 # If you're a user then execute from the project root,
-# e.g. ./scripts/publish-tag-branch.sh
+# e.g. ./scripts/publish-tag.sh
 
 set -eo pipefail
 
@@ -24,7 +24,7 @@ echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin do
 
 # Construct the application docker images
 # and push to docker.io.
-# This will be a tag image only (we're not on master).
+# This will be a tag image only.
 
 pushd "$PROJECT_DIR"/components || exit
 

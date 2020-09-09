@@ -26,7 +26,10 @@
 #   https://guides.gradle.org/executing-gradle-builds-on-travisci
 #   https://docs.travis-ci.com/user/languages/java/
 
-os: linux
+# The Xenial Build Environment
+# (https://docs.travis-ci.com/user/reference/xenial/)
+# Where openjdk8 is allegedly the default.
+dist: xenial
 language: java
 jdk: openjdk8
 
@@ -38,10 +41,12 @@ stages:
   # The 'compile' stage
   # - Compiles the code (a quick initial stage).
 - name: compile
+  if: tag IS NOT present
 
   # The 'test' stage
   # - Compiles the code and also runs unit tests.
 - name: test
+  if: tag IS NOT present
 
   # The 'docker' stage
   # - Assembles docker images to verify that they can be constructed.
@@ -63,6 +68,11 @@ stages:
 - name: trigger
   if:  (tag IS present OR branch == master) AND env(AWX_HOST) is present
 
+# Install phase.
+#
+# Before doing _anything_ some (encrypted) license files will be required.
+# We need the ChemAxon license (in HOME and in the deployment)
+# and the ChemAxon library.
 install:
 - pushd "$TRAVIS_BUILD_DIR"/components
 - ./gradlew installChemaxonLicenseToHome
@@ -92,12 +102,11 @@ jobs:
     name: Compile
     script: scripts/compile.sh
 
-  # Test-stage jobs (not run when tagged)...
+  # Test-stage jobs...
 
   - stage: test
     name: Unit Test
     script: scripts/test.sh
-    if: tag IS NOT present
 
   # Docker-stage jobs...
 
@@ -113,14 +122,9 @@ jobs:
     if: tag IS NOT present AND branch == master
 
   - stage: publish
-    name: Docker Build and Push (master/tag)
-    script: scripts/publish-tag-master.sh
-    if: tag IS present AND branch == master
-
-  - stage: publish
-    name: Docker Build and Push (branch/tag)
-    script: scripts/publish-tag-branch.sh
-    if: tag IS present AND branch != master
+    name: Docker Build and Push (tag)
+    script: scripts/publish-tag.sh
+    if: tag IS present
 
   # Trigger-stage jobs
 
