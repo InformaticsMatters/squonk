@@ -16,9 +16,16 @@
 
 package org.squonk.chemaxon.services;
 
+import chemaxon.formats.MolImporter;
+import chemaxon.jep.ChemJEP;
+import chemaxon.jep.Evaluator;
+import chemaxon.jep.context.MolContext;
+import chemaxon.license.LicenseManager;
+import chemaxon.struc.Molecule;
 import org.apache.camel.ProducerTemplate;
 import org.squonk.camel.CamelCommonConstants;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.builder.ThreadPoolProfileBuilder;
@@ -44,6 +51,9 @@ public class CamelLifeCycle implements CamelContextLifecycle<SimpleRegistry> {
     public void afterStart(ServletCamelContext scc, SimpleRegistry r) throws Exception {
         LOG.fine("CamelLifeCycle.afterStart()");
 
+        reportLicenses();
+        runTestCalc();
+
         LOG.info("Posting service descriptors");
         try {
             ProducerTemplate pt = scc.createProducerTemplate();
@@ -58,6 +68,28 @@ public class CamelLifeCycle implements CamelContextLifecycle<SimpleRegistry> {
             LOG.info("Response was: " + result);
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Failed to post descriptors service descriptors", e);
+        }
+    }
+
+    private void reportLicenses() {
+        LOG.info("CHEMAXON_LICENSE_URL environment variable set to " + System.getenv("CHEMAXON_LICENSE_URL"));
+        List<String> products = LicenseManager.getProductList(true);
+        for (String product: products) {
+            LOG.info("License for " + product + ": " + LicenseManager.isLicensed(product));
+        }
+    }
+
+    private void runTestCalc() {
+        try {
+            Molecule mol = MolImporter.importMol("CCCC", "smiles");
+            Evaluator evaluator = new Evaluator();
+            ChemJEP chemJEP = evaluator.compile("logP()", MolContext.class);
+            MolContext context = new MolContext();
+            context.setMolecule(mol);
+            Object result = chemJEP.evaluate(context);
+            LOG.info("Calculated logP " + result.toString());
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Failed to execute logP calc", e);
         }
     }
 
