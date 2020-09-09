@@ -26,7 +26,10 @@
 #   https://guides.gradle.org/executing-gradle-builds-on-travisci
 #   https://docs.travis-ci.com/user/languages/java/
 
-os: linux
+# The Xenial Build Environment
+# (https://docs.travis-ci.com/user/reference/xenial/)
+# Where openjdk8 is allegedly the default.
+dist: xenial
 language: java
 jdk: openjdk8
 
