@@ -266,7 +266,7 @@ task dockerFileChemServices(type: Dockerfile) {
 
     destFile = project.file('build/chem-services-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
-    from "informaticsmatters/rdkit-tomcat-debian:Release_2020_03_4"
+    from "informaticsmatters/rdkit-tomcat-debian:Release_2018_09_3"
 
     label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
     label(['commit-hash': "${imageCommitHash}"])
