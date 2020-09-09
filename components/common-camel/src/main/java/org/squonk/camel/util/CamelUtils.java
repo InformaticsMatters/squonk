@@ -20,6 +20,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.http.common.HttpOperationFailedException;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
@@ -123,16 +124,20 @@ public class CamelUtils {
             }
         });
 
-        Message msg = getMessage(response);
-        // this error code does not seem to being set correctly?
-        Integer code = msg.getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
-        LOG.info("REQUEST complete. RESPONSE code: " + code);
-        InputStream result = msg.getBody(InputStream.class);
-
-        if (code != null && code != 200) {
-            String err = (result == null ? "Cause unknown" : IOUtils.convertStreamToString(result));
-            throw new IOException(code + " ERROR: " + err);
+        Exception ex = response.getException();
+        if (ex != null) {
+            if (ex instanceof HttpOperationFailedException) {
+                HttpOperationFailedException hofe = (HttpOperationFailedException)ex;
+                int code = hofe.getStatusCode();
+                String body = hofe.getResponseBody();
+                LOG.warning("Request failed: " + body);
+                throw new IOException("HTTP ERROR: " + code);
+            } else {
+                throw new IOException("HTTP ERROR: cause unknown");
+            }
         } else {
+            Message msg = getMessage(response);
+            InputStream result = msg.getBody(InputStream.class);
             if (responseHeaders != null) {
                 responseHeaders.putAll(msg.getHeaders());
             }
