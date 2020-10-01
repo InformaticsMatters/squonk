@@ -128,15 +128,15 @@ jobs:
 
   # Trigger-stage jobs
 
-#  - stage: trigger
-#    name: Trigger (master/latest)
-#    language: python
-#    python: '3.8'
-#    install: skip
-#    script:
-#    - curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/requirements.txt --output trigger-awx-requirements.txt
-#    - curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/trigger-awx-tag.sh --output trigger-awx-tag.sh
-#    - pip install -r trigger-awx-requirements.txt
-#    - chmod +x trigger-awx-tag.sh
-#    - ./trigger-awx-tag.sh latest sq_image_tag "Squonk -staging-"
-#    if: tag IS NOT present AND branch == master AND env(AWX_USER_PASSWORD) is present
+  - stage: trigger
+    name: Trigger (master/latest)
+    language: python
+    python: '3.8'
+    install: skip
+    script:
+    - curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/requirements.txt --output trigger-awx-requirements.txt
+    - curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/trigger-awx-tag.sh --output trigger-awx-tag.sh
+    - pip install -r trigger-awx-requirements.txt
+    - chmod +x trigger-awx-tag.sh
+    - ./trigger-awx-tag.sh latest sq_image_tag "Squonk -staging-"
+    if: tag IS NOT present AND branch == master AND env(AWX_USER_PASSWORD) is present
