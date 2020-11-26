@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -198,11 +196,14 @@ public abstract class StructureIOClient extends AbstractAsyncHttpClient implemen
             LOG.info("Conversion to " + toFormat + ". Gzip? " + gzip);
             URIBuilder b = createURIBuilder(getDatasetConvertBase() + "/dataset_to_sdf");
 
+            DatasetMetadata meta = mols.getMetadata();
+            String json = (meta == null ? null : JsonHandler.getInstance().objectToJson(meta));
 
             NameValuePair[] headers = new NameValuePair[]{
                     new BasicNameValuePair("Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON),
                     new BasicNameValuePair("Content-Encoding", "gzip"),
                     new BasicNameValuePair("Accept", CommonMimeTypes.MIME_TYPE_MDL_SDF),
+                    new BasicNameValuePair("Metadata", json)
                     // GZIP is temporarily disabled as it causes the response to block until the entire dataset is written
                     //new BasicNameValuePair("Accept-Encoding", "gzip")
             };

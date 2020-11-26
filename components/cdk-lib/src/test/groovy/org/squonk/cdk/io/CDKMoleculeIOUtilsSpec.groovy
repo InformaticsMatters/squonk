@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -357,6 +357,23 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         input?.close()
     }
 
+    void "write smartcyp kinase"() {
+
+        def data = new GZIPInputStream(
+                new FileInputStream('../../data/testfiles/SMARTCyp1_results.json.gz'))
+        def meta = new FileInputStream('../../data/testfiles/SMARTCyp1_metadata.json')
+        def dataset = new Dataset(data, meta)
+        def mols = dataset.items
+
+        when:
+        CDKSDFile sdf = CDKMoleculeIOUtils.covertToSDFile(mols.stream(), true)
+        String content = IOUtils.convertStreamToString(sdf.inputStream)
+        //println content
+
+        then:
+        mols.size() == 36
+        content.split('<mr_id>').length == 37
+    }
 
     void "read pdb write mol2"() {
         InputStream is = new GZIPInputStream(new FileInputStream("../../data/testfiles/1cx2.pdb.gz"))

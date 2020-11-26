@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Informatics Matters Ltd.
+ * Copyright (c) 2020 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -370,7 +370,11 @@ public class CDKMoleculeIOUtils {
             String key = e.getKey();
             Object val = e.getValue();
             if (key != null && val != null) {
-                iac.setProperty(key, val);
+                if ((val instanceof String) || (val instanceof Number)) {
+                    iac.setProperty(key, val);
+                } else {
+                    iac.setProperty(key, val.toString());
+                }
             }
         }
         // for some reason CDK adds this property with no value, so we remove it
