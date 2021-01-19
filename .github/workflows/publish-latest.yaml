@@ -1,0 +1,93 @@
+---
+name: publish latest
+
+# -----------------
+# Control variables (GitHub Secrets)
+# -----------------
+#
+# At the GitHub 'organisation' or 'project' level you must have the following
+# GitHub 'Repository Secrets' defined (i.e. via 'Settings -> Secrets'): -
+#
+# DOCKERHUB_USERNAME
+# DOCKERHUB_TOKEN
+#
+# -----------
+# Environment (GitHub Environments)
+# -----------
+#
+# Environment         awx/im-main
+#
+# For automated deployment we expect the following in the environment: -
+#
+# AWX_HOST            The fully-qualified URL to AWX.
+#                     If not set, AWX triggering does not take place.
+# AWX_USER            The username of someone that can execute the AWX Job.
+# AWX_USER_PASSWORD   The user's password.
+
+on:
+  push:
+    branches:
+    - 'master'
+
+env:
+  AWX_TRIGGER_ORIGIN: https://raw.githubusercontent.com/informaticsmatters/trigger-awx/1.0.2
+  CHEMAXON_LIBRARY_ABSENT: 'yes'
+  SQUONK_DOCKER_WORK_DIR: $GITHUB_WORKSPACE/tmp
+  SQUONK_IMAGE_TAG: latest
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    - uses: actions/checkout@v2
+    - name: Set up Java 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Test
+      run: ./gradlew build
+      working-directory: components
+    - name: Build
+      run: ./gradlew dockerBuildImages -x test
+      working-directory: components
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Push
+      run: |
+        docker push squonk/chemservices-basic:latest
+        docker push squonk/chemcentral-search:latest
+        docker push squonk/coreservices:latest
+        docker push squonk/cellexecutor:latest
+        docker push squonk/jobexecutor-keycloak:latest
+        docker push squonk/chemcentral-loader:latest
+        docker push squonk/flyway:latest
+        docker push squonk/flyway-2:latest
+
+  trigger-awx-staging:
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+    environment: awx/im-main
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Install AWX trigger
+      run: |
+        curl --location --retry 3 ${TRIGGER_ORIGIN}/requirements.txt --output trigger-awx-requirements.txt
+        curl --location --retry 3 ${TRIGGER_ORIGIN}/trigger-awx-tag.sh --output trigger-awx-tag.sh
+        pip install -r trigger-awx-requirements.txt
+        chmod +x trigger-awx-tag.sh
+    - name: Trigger AWX
+      run: ./trigger-awx-tag.sh latest sq_image_tag "Squonk -staging-"
+      env:
+        AWX_HOST: ${{ secrets.AWX_HOST }}
+        AWX_USER: ${{ secrets.AWX_USER }}
+        AWX_USER_PASSWORD: ${{ secrets.AWX_USER_PASSWORD }}

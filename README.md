@@ -1,6 +1,9 @@
 # Squonk main repository
 
-[![Build Status](https://travis-ci.com/InformaticsMatters/squonk.svg?branch=master)](https://travis-ci.com/InformaticsMatters/squonk)
+![build](https://github.com/InformaticsMatters/squonk/workflows/test%20and%20build/badge.svg)
+![publish latest](https://github.com/InformaticsMatters/squonk/workflows/publish%20latest/badge.svg)
+![publish tag](https://github.com/InformaticsMatters/squonk/workflows/publish%20tag/badge.svg)
+
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/informaticsmatters/squonk)
 
 ![GitHub](https://img.shields.io/github/license/informaticsmatters/squonk)
@@ -50,13 +53,7 @@ don't have this then make sure the RDBASE environment variable is not set.
 
 ## ChemAxon services
 Data for the ChemAxon services and tests is located in the project's
-`encrypted` directory. These files are installed automatically when the build
-executes in [Travis] and the build intelligently detects whether you've
-installed the files and, if not, the corresponding tests are ignored.
-
-For your own protection you should install these files as Travis does
-so that the full set of tests are executed, but you will need the
-_encryption key_.
+`encrypted` directory.
 
     export SQUONK_DECRYPTION_KEY="GetTheKey"
     cd components
@@ -81,4 +78,3 @@ interested in using or contributing contact Tim Dudgeon
 [Pipelines repository]: https://github.com/InformaticsMatters/pipelines
 [RDKit docs]: http://rdkit.org/docs/Install.html#building-from-source
 [Squonk]: (http://squonk.it)
-[Travis]: https://travis-ci.org/InformaticsMatters/squonk
