@@ -95,8 +95,8 @@ jobs:
         python-version: '3.8'
     - name: Install AWX trigger
       run: |
-        curl --location --retry 3 ${TRIGGER_ORIGIN}/requirements.txt --output trigger-awx-requirements.txt
-        curl --location --retry 3 ${TRIGGER_ORIGIN}/trigger-awx-tag.sh --output trigger-awx-tag.sh
+        curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/requirements.txt --output trigger-awx-requirements.txt
+        curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/trigger-awx-tag.sh --output trigger-awx-tag.sh
         pip install -r trigger-awx-requirements.txt
         chmod +x trigger-awx-tag.sh
     - name: Trigger AWX
