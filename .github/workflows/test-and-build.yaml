@@ -34,6 +34,11 @@ jobs:
       with:
         java-version: 8
     - name: Test
-      run: ./gradlew build
+      run: |
+        ./gradlew installChemaxonLicenseToHome
+        ./gradlew installChemaxonLibrary
+        ./gradlew build
+      working-directory: components
     - name: Build
       run: ./gradlew dockerBuildImages -x test
+      working-directory: components

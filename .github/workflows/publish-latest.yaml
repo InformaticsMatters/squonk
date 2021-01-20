@@ -49,7 +49,7 @@ jobs:
         java-version: 8
     - name: Test
       run: |
-        ./gradlew installChemaxonLicense
+        ./gradlew installChemaxonLicenseToHome
         ./gradlew installChemaxonLibrary
         ./gradlew build
       working-directory: components
