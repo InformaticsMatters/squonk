@@ -19,11 +19,6 @@ env:
   SQUONK_DOCKER_WORK_DIR: $GITHUB_WORKSPACE/tmp
   SQUONK_IMAGE_TAG: latest
 
-default:
-  run:
-    shell: bash
-    working-directory: components
-
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
@@ -33,6 +28,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 8
+    - name: Write work-dir to env-file
+      run:  echo SQUONK_DOCKER_WORK_DIR=$(echo ${{ github.workspace }}/tmp) >> $GITHUB_ENV
     - name: Test
       run: |
         ./gradlew installChemaxonLicenseToHome

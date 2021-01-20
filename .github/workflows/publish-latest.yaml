@@ -34,7 +34,6 @@ env:
   ORG_GRADLE_PROJECT_cxnMavenRepositoryUrl: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENREPOSITORYURL }}
   ORG_GRADLE_PROJECT_cxnMavenUser: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENUSER }}
   ORG_GRADLE_PROJECT_cxnMavenPassword: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENPASSWORD }}
-  SQUONK_DOCKER_WORK_DIR: $GITHUB_WORKSPACE/tmp
   SQUONK_IMAGE_TAG: latest
   SQUONK_DECRYPTION_KEY: ${{ secrets.SQUONK_DECRYPTION_KEY }}
 
@@ -47,6 +46,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 8
+    - name: Write work-dir to env-file
+      run:  echo SQUONK_DOCKER_WORK_DIR=$(echo ${{ github.workspace }}/tmp) >> $GITHUB_ENV
     - name: Test
       run: |
         ./gradlew installChemaxonLicenseToHome
