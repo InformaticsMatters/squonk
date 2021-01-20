@@ -38,9 +38,6 @@ jobs:
         restore-keys: ${{ runner.os }}-gradle
     - name: Test
       run: |
-        curl -s get.sdkman.io | bash
-        source "$HOME/.sdkman/bin/sdkman-init.sh"
-        sdk install groovy
         ./gradlew installChemaxonLicenseToHome
         ./gradlew installChemaxonLibrary
         ./gradlew build

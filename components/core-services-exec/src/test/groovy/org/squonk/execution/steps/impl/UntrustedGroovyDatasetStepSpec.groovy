@@ -34,8 +34,10 @@ import spock.lang.IgnoreIf
  */
 
 // Alan Christie: At the moment the tests expect to write to or own
-//                "/var/maven_repo". Withr Travis (CI/CD) this is not possible.
-@IgnoreIf({ System.getenv('TRAVIS') != null })
+//                "/var/maven_repo". With many CI/CD frameworks this is not possible.
+//                On Travis there's a TRAVIS env variable
+//                On GitHub Actions there's a CI env variable
+@IgnoreIf({ System.getenv('TRAVIS') != null || System.getenv('CI') != null})
 class UntrustedGroovyDatasetStepSpec extends Specification {
 
 
