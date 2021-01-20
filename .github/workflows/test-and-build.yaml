@@ -30,6 +30,12 @@ jobs:
         java-version: 8
     - name: Write work-dir to env-file
       run:  echo SQUONK_DOCKER_WORK_DIR=$(echo ${{ github.workspace }}/tmp) >> $GITHUB_ENV
+    - name: Cache gradle packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
     - name: Test
       run: |
         curl -s get.sdkman.io | bash
