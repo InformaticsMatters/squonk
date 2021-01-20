@@ -50,6 +50,9 @@ jobs:
       run:  echo SQUONK_DOCKER_WORK_DIR=$(echo ${{ github.workspace }}/tmp) >> $GITHUB_ENV
     - name: Test
       run: |
+        curl -s get.sdkman.io | bash
+        source "$HOME/.sdkman/bin/sdkman-init.sh"
+        sdk install groovy
         ./gradlew installChemaxonLicenseToHome
         ./gradlew installChemaxonLibrary
         ./gradlew build
