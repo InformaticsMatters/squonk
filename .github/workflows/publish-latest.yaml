@@ -30,7 +30,6 @@ on:
     - 'master'
 
 env:
-  AWX_TRIGGER_ORIGIN: https://raw.githubusercontent.com/informaticsmatters/trigger-awx/1.0.2
   ORG_GRADLE_PROJECT_cxnMavenRepositoryUrl: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENREPOSITORYURL }}
   ORG_GRADLE_PROJECT_cxnMavenUser: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENUSER }}
   ORG_GRADLE_PROJECT_cxnMavenPassword: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENPASSWORD }}
@@ -88,20 +87,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: awx/im-main
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-    - name: Install AWX trigger
-      run: |
-        curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/requirements.txt --output trigger-awx-requirements.txt
-        curl --location --retry 3 ${AWX_TRIGGER_ORIGIN}/trigger-awx-tag.sh --output trigger-awx-tag.sh
-        pip install -r trigger-awx-requirements.txt
-        chmod +x trigger-awx-tag.sh
     - name: Trigger AWX
-      run: ./trigger-awx-tag.sh latest sq_image_tag "Squonk -staging-"
-      env:
-        AWX_HOST: ${{ secrets.AWX_HOST }}
-        AWX_USER: ${{ secrets.AWX_USER }}
-        AWX_USER_PASSWORD: ${{ secrets.AWX_USER_PASSWORD }}
+      uses: informaticsmatters/trigger-awx-action@v1
+      with:
+        template: Squonk -staging-
+        template-host: ${{ secrets.AWX_HOST }}
+        template-user: ${{ secrets.AWX_USER }}
+        template-user-password: ${{ secrets.AWX_USER_PASSWORD }}
+        template-var: sq_image_tag
+        template-var-value: latest
