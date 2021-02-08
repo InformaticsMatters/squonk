@@ -6,6 +6,21 @@ name: test and build
 # Here we test the code and build container images but don't push them
 # and therefore do not require docker credentials.
 
+# -----------------
+# Control variables (GitHub Secrets)
+# -----------------
+#
+# At the GitHub 'organisation' or 'project' level you must have the following
+# GitHub 'Repository Secrets' defined (i.e. via 'Settings -> Secrets'): -
+#
+# (none)
+#
+# -----------
+# Environment (GitHub Environments)
+# -----------
+#
+# Environment         (none)
+
 on:
   push:
     branches-ignore:
