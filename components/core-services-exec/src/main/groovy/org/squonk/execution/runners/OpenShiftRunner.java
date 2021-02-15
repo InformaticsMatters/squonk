@@ -84,22 +84,26 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_NODE_AFFINITY_VALUE_ENV_NAME = "SQUONK_POD_NODE_AFFINITY_VALUE";
     private static final String POD_NODE_AFFINITY_VALUE_DEFAULT = "worker";
 
+    private static final String NF_QUEUE_SIZE_ENV_NAME = "SQUONK_NF_QUEUE_SIZE";
+    private static final String NF_QUEUE_SIZE_DEFAULT = "100";
+
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
     // as a separate environment variable into the Pod container.
     private static final String POD_ENVIRONMENT_ENV_NAME = "SQUONK_POD_ENVIRONMENT";
     private static final String POD_ENVIRONMENT_DEFAULT = "";
 
-    private static final String OS_SA;
-    private static final String OS_PROJECT;
+    private static final String OS_DATA_VOLUME_PVC_NAME;
+    private static final int    OS_NF_QUEUE_SIZE;
     private static final String OS_POD_BASE_NAME;
     private static final String OS_POD_ENVIRONMENT;
-    private static final String OS_DATA_VOLUME_PVC_NAME;
     private static final String OS_POD_IMAGE_PULL_POLICY;
     private static final String OS_POD_NODE_AFFINITY_KEY = "informaticsmatters.com/purpose";
     private static final String OS_POD_NODE_AFFINITY_VALUE;
     private static final String OS_POD_NODE_AFFINITY_OPERATOR = "In";
     private static final String OS_POD_RESTART_POLICY = "Never";
+    private static final String OS_PROJECT;
+    private static final String OS_SA;
 
     // The OpenShift Job is given a period of time to start.
     // This time accommodates a reasonable time to pull the image
@@ -574,6 +578,9 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Add all the stuff Nextflow needs from our OpenShift world...
         String additionalConfig = String.format(
+                "executor {\n" +
+                "  queueSize = %s\n" +
+                "}\n" +
                 "k8s {\n" +
                 "  storageClaimName = '%s'\n" +
                 "  storageMountPath = '%s'\n" +
@@ -581,6 +588,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 "  serviceAccount = '%s'\n" +
                 "  pod = [nodeSelector: '%s']\n" +
                 "}\n",
+                OS_NF_QUEUE_SIZE,
                 OS_DATA_VOLUME_PVC_NAME,
                 localWorkDir,
                 jobId,
@@ -1069,6 +1077,16 @@ public class OpenShiftRunner extends AbstractRunner {
         OS_POD_NODE_AFFINITY_VALUE = IOUtils
                 .getConfiguration(POD_NODE_AFFINITY_VALUE_ENV_NAME, POD_NODE_AFFINITY_VALUE_DEFAULT).toLowerCase(Locale.ROOT);
         LOG.info("OS_POD_NODE_AFFINITY_VALUE=" + OS_POD_NODE_AFFINITY_VALUE);
+
+        // And the Nextflow Queue Size (no less than 1)
+        String  nfQueueSize = IOUtils
+                .getConfiguration(NF_QUEUE_SIZE_ENV_NAME, NF_QUEUE_SIZE_DEFAULT);
+        int nfQueueSizeInt = Integer.parseInt(nfQueueSize);
+        if (nfQueueSizeInt < 1) {
+            nfQueueSizeInt = 1;
+        }
+        OS_NF_QUEUE_SIZE = nfQueueSizeInt;
+        LOG.info("OS_NF_QUEUE_SIZE=" + OS_NF_QUEUE_SIZE);
 
         // Get the configured log capacity
         // (maximum number of lines collected from a Pod).
