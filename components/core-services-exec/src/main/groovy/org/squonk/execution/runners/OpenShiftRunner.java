@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Informatics Matters Ltd.
+ * Copyright (c) 2021 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -588,7 +588,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 localWorkDir,
                 jobId,
                 OS_SA,
-                OS_POD_NODE_PURPOSE_KEY + '/' + OS_POD_NODE_PURPOSE);
+                OS_POD_NODE_PURPOSE_KEY + '=' + OS_POD_NODE_PURPOSE);
 
         return originalConfig + "\n" + additionalConfig;
 
@@ -749,8 +749,9 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Create the Pod's affinity.
         // A Node Affinity that requires the Pod to run
-        // on a node designated as a 'worker'.
-        //
+        // on a node designated as a 'worker' (by default).
+        LOG.info("Setting pod node affinity: " + OS_POD_NODE_PURPOSE_KEY + '=' OS_POD_NODE_PURPOSE);
+
         // Pods _must_ run on nodes with the supplied purpose ('worker' by default).
         // The user can change the purpose of the nodes but the affinity
         // is always "required" when scheduling, not "preferred".
