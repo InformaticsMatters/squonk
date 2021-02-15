@@ -1,8 +1,7 @@
 ---
-name: test and build
+name: build branch
 
-# Actions that take place on branches
-# or are driven by pull-requests to the main/master branch.
+# Actions that take place on branches.
 # Here we test the code and build container images but don't push them
 # and therefore do not require docker credentials.
 
@@ -13,7 +12,11 @@ name: test and build
 # At the GitHub 'organisation' or 'project' level you must have the following
 # GitHub 'Repository Secrets' defined (i.e. via 'Settings -> Secrets'): -
 #
-# (none)
+# ORG_GRADLE_PROJECT_CXNMAVENPASSWORD
+# ORG_GRADLE_PROJECT_CXNMAVENREPOSITORYURL
+# ORG_GRADLE_PROJECT_CXNMAVENUSER
+#
+# SQUONK_DECRYPTION_KEY
 #
 # -----------
 # Environment (GitHub Environments)
@@ -25,20 +28,20 @@ on:
   push:
     branches-ignore:
     - 'master'
-  pull_request:
-    branches:
-    - 'master'
 
 env:
-  CHEMAXON_LIBRARY_ABSENT: 'yes'
-  SQUONK_DOCKER_WORK_DIR: $GITHUB_WORKSPACE/tmp
+  ORG_GRADLE_PROJECT_cxnMavenPassword: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENPASSWORD }}
+  ORG_GRADLE_PROJECT_cxnMavenRepositoryUrl: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENREPOSITORYURL }}
+  ORG_GRADLE_PROJECT_cxnMavenUser: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENUSER }}
+  SQUONK_DECRYPTION_KEY: ${{ secrets.SQUONK_DECRYPTION_KEY }}
   SQUONK_IMAGE_TAG: latest
 
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Set up Java 8
       uses: actions/setup-java@v1
       with:

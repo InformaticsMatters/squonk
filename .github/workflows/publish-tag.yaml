@@ -26,7 +26,8 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Inject slug/short variables
       uses: rlespinasse/github-slug-action@v3.x
     - name: Set up Java 8
