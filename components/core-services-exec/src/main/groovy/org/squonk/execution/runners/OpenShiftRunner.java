@@ -81,8 +81,8 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_IMAGE_PULL_POLICY_ENV_NAME = "SQUONK_POD_IMAGE_PULL_POLICY";
     private static final String POD_IMAGE_PULL_POLICY_DEFAULT = "IfNotPresent";
 
-    private static final String POD_NODE_PURPOSE_ENV_NAME = "SQUONK_POD_NODE_PURPOSE";
-    private static final String POD_NODE_PURPOSE_DEFAULT = "worker";
+    private static final String POD_NODE_AFFINITY_VALUE_ENV_NAME = "SQUONK_POD_NODE_AFFINITY_VALUE";
+    private static final String POD_NODE_AFFINITY_VALUE_DEFAULT = "worker";
 
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
@@ -96,13 +96,10 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String OS_POD_ENVIRONMENT;
     private static final String OS_DATA_VOLUME_PVC_NAME;
     private static final String OS_POD_IMAGE_PULL_POLICY;
-    private static final String OS_POD_NODE_PURPOSE;
+    private static final String OS_POD_NODE_AFFINITY_KEY = "informaticsmatters.com/purpose";
+    private static final String OS_POD_NODE_AFFINITY_VALUE;
+    private static final String OS_POD_NODE_AFFINITY_OPERATOR = "In";
     private static final String OS_POD_RESTART_POLICY = "Never";
-
-    // The node 'purpose' key -
-    // The key's label used for the 'purpose' affinity
-    // and node selection value.
-    private static final String OS_POD_NODE_PURPOSE_KEY = "informaticsmatters.com/purpose";
 
     // The OpenShift Job is given a period of time to start.
     // This time accommodates a reasonable time to pull the image
@@ -588,7 +585,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 localWorkDir,
                 jobId,
                 OS_SA,
-                OS_POD_NODE_PURPOSE_KEY + '=' + OS_POD_NODE_PURPOSE);
+                OS_POD_NODE_AFFINITY_KEY + '=' + OS_POD_NODE_AFFINITY_VALUE);
 
         return originalConfig + "\n" + additionalConfig;
 
@@ -750,7 +747,9 @@ public class OpenShiftRunner extends AbstractRunner {
         // Create the Pod's affinity.
         // A Node Affinity that requires the Pod to run
         // on a node designated as a 'worker' (by default).
-        LOG.info("Setting pod node affinity: " + OS_POD_NODE_PURPOSE_KEY + '=' + OS_POD_NODE_PURPOSE);
+        LOG.info("nodeAffinity: " + OS_POD_NODE_AFFINITY_KEY +
+                    " " + OS_POD_NODE_AFFINITY_OPERATOR +
+                    " " + OS_POD_NODE_AFFINITY_VALUE);
 
         // Pods _must_ run on nodes with the supplied purpose ('worker' by default).
         // The user can change the purpose of the nodes but the affinity
@@ -758,9 +757,9 @@ public class OpenShiftRunner extends AbstractRunner {
         // Therefore if your cluster has no suitably labelled nodes
         // the Pod will not run, instead remaining in a "Pending" state.
         NodeSelectorRequirement nodeSelectorRequirement = new NodeSelectorRequirementBuilder()
-                .withKey(OS_POD_NODE_PURPOSE_KEY)
-                .withOperator("In")
-                .withValues(OS_POD_NODE_PURPOSE)
+                .withKey(OS_POD_NODE_AFFINITY_KEY)
+                .withOperator(OS_POD_NODE_AFFINITY_OPERATOR)
+                .withValues(OS_POD_NODE_AFFINITY_VALUE)
                 .build();
         NodeSelectorTerm nodeSelectorTerm = new NodeSelectorTermBuilder()
                 .withMatchExpressions(nodeSelectorRequirement)
@@ -1067,9 +1066,9 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("OS_POD_IMAGE_PULL_POLICY=" + OS_POD_IMAGE_PULL_POLICY);
 
         // And the Node Purpose (for Pod Affinity)
-        OS_POD_NODE_PURPOSE = IOUtils
-                .getConfiguration(POD_NODE_PURPOSE_ENV_NAME, POD_NODE_PURPOSE_DEFAULT).toLowerCase(Locale.ROOT);
-        LOG.info("OS_POD_NODE_PURPOSE=" + OS_POD_NODE_PURPOSE);
+        OS_POD_NODE_AFFINITY_VALUE = IOUtils
+                .getConfiguration(POD_NODE_AFFINITY_VALUE_ENV_NAME, POD_NODE_AFFINITY_VALUE_DEFAULT).toLowerCase(Locale.ROOT);
+        LOG.info("OS_POD_NODE_AFFINITY_VALUE=" + OS_POD_NODE_AFFINITY_VALUE);
 
         // Get the configured log capacity
         // (maximum number of lines collected from a Pod).
