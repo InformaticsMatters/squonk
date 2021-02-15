@@ -7,7 +7,7 @@ import org.apache.camel.builder.RouteBuilder
 import org.apache.http.client.utils.URIBuilder
 import org.squonk.camel.testsupport.CamelSpecificationBase
 
-import java.util.zip.GZIPInputStream
+import javax.ws.rs.core.UriBuilder
 import java.util.zip.GZIPOutputStream
 
 class AsyncHttpClientSpec extends CamelSpecificationBase {
@@ -19,8 +19,11 @@ class AsyncHttpClientSpec extends CamelSpecificationBase {
 
 
         when:
-        def url = "http://localhost:8888/data"
-        AbstractAsyncHttpClient.AsyncResponse resp = client.executeGet(new URIBuilder().setPath(url), null)
+        URIBuilder uri = new URIBuilder()
+                .setScheme('http')
+                .setHost('localhost:8888')
+                .setPath('data')
+        AbstractAsyncHttpClient.AsyncResponse resp = client.executeGet(uri, null)
         def http = resp.httpResponse.get()
         println http.getStatusLine()
         http.getAllHeaders().each {
