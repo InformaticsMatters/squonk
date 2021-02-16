@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-echo "=-> Assembling..."
-
-tar -C /tmp -xvf /tmp/src/cell-executor-0.2.0-SNAPSHOT.tar
-
-echo "=-> Assembled"

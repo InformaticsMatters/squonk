@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-echo "=-> Assembling..."
-
-cp /tmp/src/core-services-server-0.2.0-SNAPSHOT.war /usr/local/tomcat/webapps/coreservices.war
-
-echo "=-> Assembled"

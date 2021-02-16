@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-/tmp/cell-executor-0.2.0-SNAPSHOT/bin/cell-executor

@@ -16,7 +16,6 @@
 **/*.retry
 **/geckodriver.log
 
-openshift/jenkins/setenv.sh
 **/vault-pass.txt
 
 tmp/
