@@ -60,11 +60,13 @@ jobs:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
-    - name: Test
+    - name: Install licenses
       run: |
         ./gradlew installChemaxonLicenseToHome
         ./gradlew installChemaxonLibrary
-        ./gradlew build
+      working-directory: components
+    - name: Test
+      run: ./gradlew build
       working-directory: components
     - name: Build
       run: ./gradlew dockerBuildImages -x test
