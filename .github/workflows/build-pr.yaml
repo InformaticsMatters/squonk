@@ -12,7 +12,11 @@ name: build pr
 # At the GitHub 'organisation' or 'project' level you must have the following
 # GitHub 'Repository Secrets' defined (i.e. via 'Settings -> Secrets'): -
 #
-# (none)
+# ORG_GRADLE_PROJECT_CXNMAVENPASSWORD
+# ORG_GRADLE_PROJECT_CXNMAVENREPOSITORYURL
+# ORG_GRADLE_PROJECT_CXNMAVENUSER
+#
+# SQUONK_DECRYPTION_KEY
 #
 # -----------
 # Environment (GitHub Environments)
@@ -26,7 +30,11 @@ on:
     - 'master'
 
 env:
+  ORG_GRADLE_PROJECT_cxnMavenPassword: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENPASSWORD }}
+  ORG_GRADLE_PROJECT_cxnMavenRepositoryUrl: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENREPOSITORYURL }}
+  ORG_GRADLE_PROJECT_cxnMavenUser: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENUSER }}
   SQUONK_IMAGE_TAG: latest
+  SQUONK_DECRYPTION_KEY: ${{ secrets.SQUONK_DECRYPTION_KEY }}
 
 jobs:
   test-and-build:
