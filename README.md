@@ -1,7 +1,6 @@
 # Squonk main repository
 
-![build pr](https://github.com/InformaticsMatters/squonk/workflows/build%20pr/badge.svg)
-![build branch](https://github.com/InformaticsMatters/squonk/workflows/build%20branch/badge.svg)
+![build](https://github.com/InformaticsMatters/squonk/workflows/build/badge.svg)
 ![publish latest](https://github.com/InformaticsMatters/squonk/workflows/publish%20latest/badge.svg)
 ![publish tag](https://github.com/InformaticsMatters/squonk/workflows/publish%20tag/badge.svg)
 
