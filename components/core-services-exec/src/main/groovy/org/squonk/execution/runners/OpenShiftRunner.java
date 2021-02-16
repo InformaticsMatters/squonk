@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Informatics Matters Ltd.
+ * Copyright (c) 2021 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  * The runner relies on the presence of a Persistent Volume Claim (PVC) that
  * has been successfully bound.
  * <p/>
- * In order to run this within an OpoenShift cluster you will need:
+ * In order to run this within an OpenShift/Kubernetes cluster you will need:
  * - A project (named "squonk")
  * - A suitable service account with admin privileges (named "squonk")
  *
@@ -81,19 +81,29 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_IMAGE_PULL_POLICY_ENV_NAME = "SQUONK_POD_IMAGE_PULL_POLICY";
     private static final String POD_IMAGE_PULL_POLICY_DEFAULT = "IfNotPresent";
 
+    private static final String POD_NODE_AFFINITY_VALUE_ENV_NAME = "SQUONK_POD_NODE_AFFINITY_VALUE";
+    private static final String POD_NODE_AFFINITY_VALUE_DEFAULT = "worker";
+
+    private static final String NF_QUEUE_SIZE_ENV_NAME = "SQUONK_NF_QUEUE_SIZE";
+    private static final String NF_QUEUE_SIZE_DEFAULT = "100";
+
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
     // as a separate environment variable into the Pod container.
     private static final String POD_ENVIRONMENT_ENV_NAME = "SQUONK_POD_ENVIRONMENT";
     private static final String POD_ENVIRONMENT_DEFAULT = "";
 
-    private static final String OS_SA;
-    private static final String OS_PROJECT;
+    private static final String OS_DATA_VOLUME_PVC_NAME;
+    private static final int    OS_NF_QUEUE_SIZE;
     private static final String OS_POD_BASE_NAME;
     private static final String OS_POD_ENVIRONMENT;
-    private static final String OS_DATA_VOLUME_PVC_NAME;
-    private static final String OS_IMAGE_PULL_POLICY;
+    private static final String OS_POD_IMAGE_PULL_POLICY;
+    private static final String OS_POD_NODE_AFFINITY_KEY = "informaticsmatters.com/purpose";
+    private static final String OS_POD_NODE_AFFINITY_VALUE;
+    private static final String OS_POD_NODE_AFFINITY_OPERATOR = "In";
     private static final String OS_POD_RESTART_POLICY = "Never";
+    private static final String OS_PROJECT;
+    private static final String OS_SA;
 
     // The OpenShift Job is given a period of time to start.
     // This time accommodates a reasonable time to pull the image
@@ -409,7 +419,7 @@ public class OpenShiftRunner extends AbstractRunner {
      *
      * @param imageName       The Docker image to run.
      * @param imagePullSecret If non-null and non-empty, the name of a pull secret,
-     *                        exected to exist in the namespace of the Job to be launched,
+     *                        expected to exist in the namespace of the Job to be launched,
      *                        that provides credentials to pull the Docker image.
      * @param hostBaseWorkDir The directory on the host that will be used to
      *                        create a work dir. It must exist or be creatable
@@ -567,18 +577,23 @@ public class OpenShiftRunner extends AbstractRunner {
         }
 
         // Add all the stuff Nextflow needs from our OpenShift world...
-        // The following requires Nextflow 0.31.0 or later.
         String additionalConfig = String.format(
+                "executor {\n" +
+                "  queueSize = %s\n" +
+                "}\n" +
                 "k8s {\n" +
                 "  storageClaimName = '%s'\n" +
                 "  storageMountPath = '%s'\n" +
                 "  storageSubPath = '%s'\n" +
                 "  serviceAccount = '%s'\n" +
+                "  pod = [nodeSelector: '%s']\n" +
                 "}\n",
+                OS_NF_QUEUE_SIZE,
                 OS_DATA_VOLUME_PVC_NAME,
                 localWorkDir,
                 jobId,
-                OS_SA);
+                OS_SA,
+                OS_POD_NODE_AFFINITY_KEY + '=' + OS_POD_NODE_AFFINITY_VALUE);
 
         return originalConfig + "\n" + additionalConfig;
 
@@ -713,7 +728,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withName(podName)
                 .withImage(imageName)
                 .withWorkingDir(localWorkDir)
-                .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
+                .withImagePullPolicy(OS_POD_IMAGE_PULL_POLICY)
                 .withEnv(containerEnv)
                 .withResources(resources)
                 .withVolumeMounts(volumeMount).build();
@@ -737,6 +752,36 @@ public class OpenShiftRunner extends AbstractRunner {
         PodSecurityContext psc = new PodSecurityContextBuilder()
                 .withSupplementalGroups(gid).build();
 
+        // Create the Pod's affinity.
+        // A Node Affinity that requires the Pod to run
+        // on a node designated as a 'worker' (by default).
+        LOG.info("nodeAffinity: " + OS_POD_NODE_AFFINITY_KEY +
+                    " " + OS_POD_NODE_AFFINITY_OPERATOR +
+                    " " + OS_POD_NODE_AFFINITY_VALUE);
+
+        // Pods _must_ run on nodes with the supplied purpose ('worker' by default).
+        // The user can change the purpose of the nodes but the affinity
+        // is always "required" when scheduling, not "preferred".
+        // Therefore if your cluster has no suitably labelled nodes
+        // the Pod will not run, instead remaining in a "Pending" state.
+        NodeSelectorRequirement nodeSelectorRequirement = new NodeSelectorRequirementBuilder()
+                .withKey(OS_POD_NODE_AFFINITY_KEY)
+                .withOperator(OS_POD_NODE_AFFINITY_OPERATOR)
+                .withValues(OS_POD_NODE_AFFINITY_VALUE)
+                .build();
+        NodeSelectorTerm nodeSelectorTerm = new NodeSelectorTermBuilder()
+                .withMatchExpressions(nodeSelectorRequirement)
+                .build();
+        NodeSelector nodeSelector = new NodeSelectorBuilder()
+                .withNodeSelectorTerms(nodeSelectorTerm)
+                .build();
+        NodeAffinity nodeAffinity = new NodeAffinityBuilder()
+                .withRequiredDuringSchedulingIgnoredDuringExecution(nodeSelector)
+                .build();
+        Affinity podAffinity = new AffinityBuilder()
+                .withNodeAffinity(nodeAffinity)
+                .build();
+
         // The Pod, which runs the container image...
         Pod pod = new PodBuilder()
                 .withNewMetadata()
@@ -745,6 +790,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .endMetadata()
                 .withNewSpec()
                 .withImagePullSecrets(pullSecrets)
+                .withAffinity(podAffinity)
                 .withSecurityContext(psc)
                 .withContainers(podContainer)
                 .withServiceAccount(OS_SA)
@@ -1023,11 +1069,26 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("OS_POD_CPU_RESOURCE=" + OS_POD_CPU_RESOURCE);
 
         // And the Pod Pull Policy
-        OS_IMAGE_PULL_POLICY = IOUtils
+        OS_POD_IMAGE_PULL_POLICY = IOUtils
                 .getConfiguration(POD_IMAGE_PULL_POLICY_ENV_NAME, POD_IMAGE_PULL_POLICY_DEFAULT);
-        LOG.info("OS_IMAGE_PULL_POLICY=" + OS_IMAGE_PULL_POLICY);
+        LOG.info("OS_POD_IMAGE_PULL_POLICY=" + OS_POD_IMAGE_PULL_POLICY);
 
-        // Get the configured log cpacity
+        // And the Node Purpose (for Pod Affinity)
+        OS_POD_NODE_AFFINITY_VALUE = IOUtils
+                .getConfiguration(POD_NODE_AFFINITY_VALUE_ENV_NAME, POD_NODE_AFFINITY_VALUE_DEFAULT).toLowerCase(Locale.ROOT);
+        LOG.info("OS_POD_NODE_AFFINITY_VALUE=" + OS_POD_NODE_AFFINITY_VALUE);
+
+        // And the Nextflow Queue Size (no less than 1)
+        String  nfQueueSize = IOUtils
+                .getConfiguration(NF_QUEUE_SIZE_ENV_NAME, NF_QUEUE_SIZE_DEFAULT);
+        int nfQueueSizeInt = Integer.parseInt(nfQueueSize);
+        if (nfQueueSizeInt < 1) {
+            nfQueueSizeInt = 1;
+        }
+        OS_NF_QUEUE_SIZE = nfQueueSizeInt;
+        LOG.info("OS_NF_QUEUE_SIZE=" + OS_NF_QUEUE_SIZE);
+
+        // Get the configured log capacity
         // (maximum number of lines collected from a Pod).
         // Zero, the default (or -ve values) are interpreted as 'keep all log lines'.
         String logCapacity = IOUtils

@@ -183,22 +183,21 @@ public class DockerRunner extends AbstractRunner {
         }
         isRunning = 1;
 
-        // pull the image if it's not present
-        List<Image> dockerSearch = dockerClient.listImagesCmd().withImageNameFilter(imageName).exec();
-        LOG.info("Search returned" + dockerSearch.toString());
-        if (dockerSearch.size() == 0) {
-            LOG.info("Need to pull image " + imageName);
-            String[] imagePlusTag = splitImageAndTag(imageName);
-            PullImageResultCallback callback = new PullImageResultCallback();
-            try {
-                dockerClient.pullImageCmd(imagePlusTag[0])
-                        .withTag(imagePlusTag[1])
-                        .exec(callback)
-                        .awaitCompletion(120, TimeUnit.SECONDS);
-                LOG.info("Image " + imageName + " pulled");
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Pulling image interrupted", e);
-            }
+        // Pull the required image.
+        // Nothing is pulled if we already have the image (i.e. this should be quick) -
+        // and this is safer, should the remote image have changed.
+        LOG.info("Need image " + imageName);
+        String[] imagePlusTag = splitImageAndTag(imageName);
+        PullImageResultCallback callback = new PullImageResultCallback();
+        try {
+            LOG.info("Attempting to pulling image " + imageName + " ...");
+            dockerClient.pullImageCmd(imagePlusTag[0])
+                    .withTag(imagePlusTag[1])
+                    .exec(callback)
+                    .awaitCompletion(120, TimeUnit.SECONDS);
+            LOG.info("Image " + imageName + " pulled");
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Pulling image interrupted", e);
         }
 
         // create and execute the container
