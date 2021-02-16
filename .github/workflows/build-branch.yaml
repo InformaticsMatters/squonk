@@ -28,6 +28,9 @@ on:
   push:
     branches-ignore:
     - 'master'
+  schedule:
+  # Build every Monday at 7:15pm
+  - cron: '15,19,*,*,1'
 
 env:
   ORG_GRADLE_PROJECT_cxnMavenPassword: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENPASSWORD }}
