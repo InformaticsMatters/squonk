@@ -11,6 +11,12 @@ name: publish tag
 # DOCKERHUB_USERNAME
 # DOCKERHUB_TOKEN
 #
+# ORG_GRADLE_PROJECT_CXNMAVENPASSWORD
+# ORG_GRADLE_PROJECT_CXNMAVENREPOSITORYURL
+# ORG_GRADLE_PROJECT_CXNMAVENUSER
+#
+# SQUONK_DECRYPTION_KEY
+#
 # -----------
 # Environment (GitHub Environments)
 # -----------
@@ -21,6 +27,13 @@ on:
   push:
     tags:
     - '**'
+
+env:
+  ORG_GRADLE_PROJECT_cxnMavenPassword: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENPASSWORD }}
+  ORG_GRADLE_PROJECT_cxnMavenRepositoryUrl: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENREPOSITORYURL }}
+  ORG_GRADLE_PROJECT_cxnMavenUser: ${{ secrets.ORG_GRADLE_PROJECT_CXNMAVENUSER }}
+  SQUONK_IMAGE_TAG: latest
+  SQUONK_DECRYPTION_KEY: ${{ secrets.SQUONK_DECRYPTION_KEY }}
 
 jobs:
   build-and-publish:
