@@ -759,28 +759,34 @@ public class OpenShiftRunner extends AbstractRunner {
                     " " + OS_POD_NODE_AFFINITY_OPERATOR +
                     " " + OS_POD_NODE_AFFINITY_VALUE);
 
-        // Pods _must_ run on nodes with the supplied purpose ('worker' by default).
-        // The user can change the purpose of the nodes but the affinity
-        // is always "required" when scheduling, not "preferred".
-        // Therefore if your cluster has no suitably labelled nodes
-        // the Pod will not run, instead remaining in a "Pending" state.
-        NodeSelectorRequirement nodeSelectorRequirement = new NodeSelectorRequirementBuilder()
-                .withKey(OS_POD_NODE_AFFINITY_KEY)
-                .withOperator(OS_POD_NODE_AFFINITY_OPERATOR)
-                .withValues(OS_POD_NODE_AFFINITY_VALUE)
-                .build();
-        NodeSelectorTerm nodeSelectorTerm = new NodeSelectorTermBuilder()
-                .withMatchExpressions(nodeSelectorRequirement)
-                .build();
-        NodeSelector nodeSelector = new NodeSelectorBuilder()
-                .withNodeSelectorTerms(nodeSelectorTerm)
-                .build();
-        NodeAffinity nodeAffinity = new NodeAffinityBuilder()
-                .withRequiredDuringSchedulingIgnoredDuringExecution(nodeSelector)
-                .build();
-        Affinity podAffinity = new AffinityBuilder()
-                .withNodeAffinity(nodeAffinity)
-                .build();
+// Removed - using affinity knocks other Pods out of the system
+//           Using NodeSelector doesn't.
+
+//         // Pods _must_ run on nodes with the supplied purpose ('worker' by default).
+//         // The user can change the purpose of the nodes but the affinity
+//         // is always "required" when scheduling, not "preferred".
+//         // Therefore if your cluster has no suitably labelled nodes
+//         // the Pod will not run, instead remaining in a "Pending" state.
+//         NodeSelectorRequirement nodeSelectorRequirement = new NodeSelectorRequirementBuilder()
+//                 .withKey(OS_POD_NODE_AFFINITY_KEY)
+//                 .withOperator(OS_POD_NODE_AFFINITY_OPERATOR)
+//                 .withValues(OS_POD_NODE_AFFINITY_VALUE)
+//                 .build();
+//         NodeSelectorTerm nodeSelectorTerm = new NodeSelectorTermBuilder()
+//                 .withMatchExpressions(nodeSelectorRequirement)
+//                 .build();
+//         NodeSelector nodeSelector = new NodeSelectorBuilder()
+//                 .withNodeSelectorTerms(nodeSelectorTerm)
+//                 .build();
+//         NodeAffinity nodeAffinity = new NodeAffinityBuilder()
+//                 .withRequiredDuringSchedulingIgnoredDuringExecution(nodeSelector)
+//                 .build();
+//         Affinity podAffinity = new AffinityBuilder()
+//                 .withNodeAffinity(nodeAffinity)
+//                 .build();
+
+        Map<String,String> nodeSelectorMap = new HashMap();
+        nodeSelectorMap.put(OS_POD_NODE_AFFINITY_KEY, OS_POD_NODE_AFFINITY_VALUE);
 
         // The Pod, which runs the container image...
         Pod pod = new PodBuilder()
@@ -790,7 +796,8 @@ public class OpenShiftRunner extends AbstractRunner {
                 .endMetadata()
                 .withNewSpec()
                 .withImagePullSecrets(pullSecrets)
-                .withAffinity(podAffinity)
+                .withNodeSelector(nodeSelectorMap)
+//                .withAffinity(podAffinity)
                 .withSecurityContext(psc)
                 .withContainers(podContainer)
                 .withServiceAccount(OS_SA)
