@@ -157,7 +157,7 @@ public class OpenShiftRunner extends AbstractRunner {
      * and is responsible for determining when the executed Pod has
      * run to completion.
      */
-    static class PodWatcher implements Watcher<Pod> {
+    class PodWatcher implements Watcher<Pod> {
 
         private String podName;
 
@@ -368,7 +368,7 @@ public class OpenShiftRunner extends AbstractRunner {
      * It is created from within the PodWatcher when we're confident the
      * Pod's running.
      */
-    static class LogStream extends OutputStream {
+    class LogStream extends OutputStream {
 
         // To accumulated the captured Pod's output...
         private StringBuilder stringBuilder = new StringBuilder();
