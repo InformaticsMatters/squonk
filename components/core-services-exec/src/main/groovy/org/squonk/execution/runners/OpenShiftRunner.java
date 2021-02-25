@@ -125,9 +125,11 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final long WATCHER_POLL_PERIOD_MILLIS = 1000;
 
     private static OpenShiftClient client;
-    private static Watch watchObject;
-    private static LogWatch logWatch;
-    private static LogStream logStream;
+
+    // Objects used to watch the Pod's events and its logs
+    private Watch watchObject;
+    private LogWatch logWatch;
+    private LogStream logStream;
 
     private final String hostBaseWorkDir;
     private final String localWorkDir;
@@ -155,7 +157,7 @@ public class OpenShiftRunner extends AbstractRunner {
      * and is responsible for determining when the executed Pod has
      * run to completion.
      */
-    static class PodWatcher implements Watcher<Pod> {
+    class PodWatcher implements Watcher<Pod> {
 
         private String podName;
 
@@ -366,7 +368,7 @@ public class OpenShiftRunner extends AbstractRunner {
      * It is created from within the PodWatcher when we're confident the
      * Pod's running.
      */
-    static class LogStream extends OutputStream {
+    class LogStream extends OutputStream {
 
         // To accumulated the captured Pod's output...
         private StringBuilder stringBuilder = new StringBuilder();
