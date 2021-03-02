@@ -33,10 +33,12 @@ class ChemspaceSmilesLoader extends AbstractRDKitLoader {
 
     ChemspaceSmilesLoader(RDKitTable table, ChemcentralConfig config) {
         super(table, config)
+        separator = "\t"
     }
 
     ChemspaceSmilesLoader() {
         super(new ChemspaceTable())
+        separator = "\t"
     }
 
     @Override
