@@ -55,11 +55,13 @@ entire dataset.
 Run the loader with a command like this:
 
 ```
-docker run -it --rm -v $HOME/data/structures/chemspace/201711_Chemspace_representative_catalogue_3_54M_sdf.sdf.gz:/rdkit/chemspace.sdf.gz:ro,Z\
+docker run -it --rm -v $HOME/Downloads/2021-02_Chemspace_Building_Blocks_Make-on-Demand_20M_SMILES.smiles.gz:/rdkit/chemspace.smiles.gz:ro\
   -e CHEMCENTRAL_HOST=172.17.0.1\
-  -e CHEMCENTRAL_LIMIT=20000\
+  -e CHEMCENTRAL_LIMIT=200000\
+  -e CHEMCENTRAL_USER=squonk\
+  -e CHEMCENTRAL_PASSWORD=squonk\
   squonk/chemcentral-loader:latest\
-  org.squonk.rdkit.db.loaders.ChemspaceSdfLoader
+  org.squonk.rdkit.db.loaders.ChemspaceSmilesLoader
 ```
 
 Adjust the value of the CHEMCENTRAL_HOST variable to where postgres is running (possibly the Docker gateway address).
@@ -89,7 +91,7 @@ Adjust the loader name (the last argument) accordingly. Options are:
 * org.squonk.rdkit.db.loaders.DrugBankSdfLoader - for DrugBank (http://www.drugbank.ca/downloads NOTE: DrugBank is no longer free to use. Look at the licensing before using it. It is not loaded into the public Squonk site)
 * org.squonk.rdkit.db.loaders.ChemblSdfLoader - For ChEMBL (ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/)
 * org.squonk.rdkit.db.loaders.PdbLigandSdfLoader - for ligands from PDB (http://ligand-expo.rcsb.org/ld-download.html. The file you want is in the "Chemical component coordinate data files" section and called all-sdf.sdf.gz. Fetch it with something like: 'wget http://ligand-expo.rcsb.org/dictionaries/all-sdf.sdf.gz')
-* org.squonk.rdkit.db.loaders.ChemspaceSdfLoader - Chemspace (Obtain this file directly from the ChemSpace people)
+* org.squonk.rdkit.db.loaders.ChemspaceSmilesLoader - Chemspace (Obtain this file directly from the ChemSpace people)
 * org.squonk.rdkit.db.loaders.MolportSmilesLoader - Molport in smiles format (https://www.molport.com/shop/database-download)
 * org.squonk.rdkit.db.loaders.LTKBLoader - LTKB dataset (see https://www.fda.gov/ScienceResearch/BioinformaticsTools/LiverToxicityKnowledgeBase/ucm2024036.htm)
 

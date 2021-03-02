@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2021 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,33 +22,31 @@ import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.tables.ChemspaceTable
 import org.squonk.util.IOUtils
 
-/** Loader for ChEMBL structures.
- * Download the SDF from ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/
- *
- *
- * Created by timbo on 16/12/2015.
+/** Loader for chemspace building blocks dataset.
+ * This data was obtained directly from ChemSpace
+ * Created by timbo on 02/03/2021.
  */
 @Log
-class ChemspaceSdfLoader extends AbstractRDKitLoader {
+class ChemspaceSmilesLoader extends AbstractRDKitLoader {
 
-    static final String DEFAULT_TABLE_NAME = "chemspace.sdf.gz";
+    static final String DEFAULT_FILE_NAME = "/rdkit/chemspace.smiles.gz";
 
-    ChemspaceSdfLoader(RDKitTable table, ChemcentralConfig config) {
+    ChemspaceSmilesLoader(RDKitTable table, ChemcentralConfig config) {
         super(table, config)
     }
 
-    ChemspaceSdfLoader() {
+    ChemspaceSmilesLoader() {
         super(new ChemspaceTable())
     }
 
     @Override
     void load() {
-        String filename = IOUtils.getConfiguration("CHEMCENTRAL_LOADER_FILE", DEFAULT_TABLE_NAME)
+        String filename = IOUtils.getConfiguration("CHEMCENTRAL_LOADER_FILE", DEFAULT_FILE_NAME)
         int limit = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_LIMIT", "0"))
         int reportingChunk = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_REPORTING_CHUNK", "10000"))
-        def propertyToTypeMappings = [CHEMSPACE_ID: String.class, CAS: String.class, MFCD: String.class, CHEMSPACE_URL: String.class]
-        log.info("Using ChemspaceSdfLoader to load $filename")
-        loadSDF(filename, limit, reportingChunk, propertyToTypeMappings, null)
+        def propertyToTypeMappings = ['1':String.class, '2':Integer.class]
+        log.info("Using ChemspaceSmilesLoader to load $filename")
+        loadSmiles(filename, limit, reportingChunk, propertyToTypeMappings)
         log.info("Loading finished")
     }
 
