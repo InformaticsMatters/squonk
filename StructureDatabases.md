@@ -93,7 +93,7 @@ Adjust the loader name (the last argument) accordingly. Options are:
 * org.squonk.rdkit.db.loaders.MolportSmilesLoader - Molport in smiles format (https://www.molport.com/shop/database-download)
 * org.squonk.rdkit.db.loaders.LTKBLoader - LTKB dataset (see https://www.fda.gov/ScienceResearch/BioinformaticsTools/LiverToxicityKnowledgeBase/ucm2024036.htm)
 
-Source code for these loaders can be found [here](https://github.com/InformaticsMatters/squonk/tree/openshift/components/rdkit-databases/src/main/groovy/org/squonk/rdkit/db/loaders).
+Source code for these loaders can be found [here](https://github.com/InformaticsMatters/squonk/tree/master/components/rdkit-databases/src/main/groovy/org/squonk/rdkit/db/loaders).
 
 Note that loading large datasets like eMolecules screening compounds or Molport takes several days.
 To prevent lost connections to the server terminating the load you might want to look into doing the loading using a the 
