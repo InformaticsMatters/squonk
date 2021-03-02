@@ -52,7 +52,9 @@ jobs:
         ./gradlew installChemaxonLibrary
       working-directory: components
     - name: Build
-      run: ./gradlew dockerBuildImages -x test
+      run: |
+        java -version
+        ./gradlew dockerBuildImages -x test
       working-directory: components
       env:
         SQUONK_IMAGE_TAG: ${{ env.GITHUB_REF_SLUG }}
