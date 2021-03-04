@@ -250,6 +250,7 @@ public class OpenShiftRunner extends AbstractRunner {
             List<PodCondition> podConditions = podStatus.getConditions();
             if (podConditions != null) {
                 for (PodCondition podCondition : podConditions) {
+                    LOG.info(">>> podCondition=" + podCondition.toString());
                     String conditionReason = podCondition.getReason();
                     if (conditionReason != null) {
                         LOG.info("conditionReason=" + conditionReason);
@@ -261,7 +262,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 }
             }
 
-            // Set phase to 'Running" or 'Terminated'...
+            // Try to set the phase to 'Running' or 'Complete'...
             if (!podPhase.equals("Complete")) {
                 // Iterate through any ContainerStatus objects.
                 // If there's a status then it's waiting (not interested in this),
@@ -270,6 +271,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 if (containerStatuses != null) {
                     for (ContainerStatus containerStatus : containerStatuses) {
                         ContainerState cs = containerStatus.getState();
+                        LOG.info(">>> CS=" + cs.toString());
                         if (cs != null) {
                             if (cs.getRunning() != null) {
                                 LOG.info("Pod is Running");
@@ -340,7 +342,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
             // If there's an exception, log and keep it.
             // The user may want to re-create the watcher instance
-            // asa mechanism of timeout recovery. The watcher can
+            // as a mechanism of timeout recovery. The watcher can
             // experience an exception like the "too old resource version"
             // if the underlying Pod has been running too long (see ch507).
             //
