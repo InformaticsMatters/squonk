@@ -27,14 +27,12 @@ import org.squonk.util.IOUtils
 class ChemspaceTable extends RDKitTable {
 
     ChemspaceTable(String schema, String baseTableName) {
-        super(schema, baseTableName, MolSourceType.MOL, [
+        super(schema, baseTableName, MolSourceType.SMILES, [
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])
-        addColumn("chemspace_id", "CHAR", "CHAR(12)") // //CSC000000015
-        addColumn("casrn", "CHAR", "CHAR(12)") // 774544-40-0
-        addColumn("mfcd", "CHAR", "CHAR(12)") // MFCD05790571
-        addColumn("chemspace_url", "VARCHAR", "VARCHAR(100)") // https://chem-space.com/CSC000000015
+        addColumn("chemspace_id", "CHAR", "CHAR(15)") // // CSMB02516611889
+        addColumn("price_1g_usd", "INTEGER", "INTEGER") // 1357
     }
 
     ChemspaceTable() {
