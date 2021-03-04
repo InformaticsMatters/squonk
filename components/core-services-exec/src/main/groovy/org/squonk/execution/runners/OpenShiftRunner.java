@@ -730,7 +730,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // base container's CMD to run './execute'.
         Container podContainer = new ContainerBuilder()
                 .withName(podName)
-                .withImage(imageName)
+                .withImage(imageName + "-blob")
                 .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_POD_IMAGE_PULL_POLICY)
                 .withEnv(containerEnv)
