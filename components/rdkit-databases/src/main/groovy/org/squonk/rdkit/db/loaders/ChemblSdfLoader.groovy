@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2021 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.squonk.rdkit.db.loaders
 import groovy.util.logging.Log
 import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.tables.ChemblTable
+import org.squonk.rdkit.db.impl.ChemblTable
 import org.squonk.util.IOUtils
 
 /** Loader for ChEMBL structures.
@@ -31,7 +31,7 @@ import org.squonk.util.IOUtils
 @Log
 class ChemblSdfLoader extends AbstractRDKitLoader {
 
-    static final String DEFAULT_TABLE_NAME = "chembl.sdf.gz";
+    static final String DEFAULT_TABLE_NAME = "/rdkit/chembl.sdf.gz";
 
     ChemblSdfLoader(RDKitTable table, ChemcentralConfig config) {
         super(table, config)

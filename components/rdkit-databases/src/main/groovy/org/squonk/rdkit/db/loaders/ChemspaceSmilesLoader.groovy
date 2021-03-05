@@ -19,7 +19,7 @@ package org.squonk.rdkit.db.loaders
 import groovy.util.logging.Log
 import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.tables.ChemspaceTable
+import org.squonk.rdkit.db.impl.ChemspaceTable
 import org.squonk.util.IOUtils
 
 /** Loader for chemspace building blocks dataset.

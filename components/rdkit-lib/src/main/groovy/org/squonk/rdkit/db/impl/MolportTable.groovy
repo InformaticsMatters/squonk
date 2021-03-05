@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2021 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,32 @@
  * limitations under the License.
  */
 
-package org.squonk.rdkit.db.tables
+package org.squonk.rdkit.db.impl
 
 import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.MolSourceType
 import org.squonk.rdkit.db.RDKitTable
+import org.squonk.util.IOUtils
 
 /**
  * Created by timbo on 16/12/2015.
  */
-class DrugbankTable extends RDKitTable {
+class MolportTable extends RDKitTable {
 
-    DrugbankTable(String schema, String baseTableName) {
-        super(schema, baseTableName, MolSourceType.MOL, [
+    MolportTable(String schema, String baseTableName) {
+        super(schema, baseTableName, MolSourceType.SMILES, [
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])
-        addColumn("drugbank_id", "CHAR", "CHAR(7)")
-        addColumn("drug_groups", "TEXT", "TEXT")
-        addColumn("generic_name", "TEXT", "TEXT")
-        addColumn("brands", "TEXT", "TEXT")
-        addColumn("products", "TEXT", "TEXT")
+        addColumn("molport_id", "CHAR", "CHAR(19) NOT NULL")
+        addColumn("pricerange_1mg", "VARCHAR", "VARCHAR(20)")
+        addColumn("pricerange_5mg", "VARCHAR", "VARCHAR(20)")
+        addColumn("pricerange_50mg", "VARCHAR", "VARCHAR(20)")
+        addColumn("best_lead_time", "INTEGER", "INTEGER")
     }
 
+    MolportTable() {
+        this(IOUtils.getConfiguration("CHEMCENTRAL_SCHEMA", "vendordbs"),
+                IOUtils.getConfiguration("CHEMCENTRAL_TABLE", "molport"))
+    }
 }

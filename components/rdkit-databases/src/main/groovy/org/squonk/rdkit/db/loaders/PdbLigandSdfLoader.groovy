@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2021 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import groovy.util.logging.Log
 import org.RDKit.ROMol
 import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.tables.PdbLigandTable
+import org.squonk.rdkit.db.impl.PdbLigandTable
 import org.squonk.rdkit.mol.MolReader
 import org.squonk.types.MoleculeObject
 import org.squonk.util.IOUtils

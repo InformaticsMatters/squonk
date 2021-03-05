@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.squonk.rdkit.db.tables
+package org.squonk.rdkit.db.impl
 
 import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.MolSourceType
@@ -24,21 +24,28 @@ import org.squonk.util.IOUtils
 /**
  * Created by timbo on 16/12/2015.
  */
-class ChemspaceTable extends RDKitTable {
+class LTKBTable extends RDKitTable {
 
-    ChemspaceTable(String schema, String baseTableName) {
+    LTKBTable(String schema, String baseTableName) {
         super(schema, baseTableName, MolSourceType.SMILES, [
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])
-        addColumn("chemspace_id", "CHAR", "CHAR(15)") // // CSMB02516611889
-        addColumn("price_1g_usd", "INTEGER", "INTEGER") // 1357
-
+        addColumn("ltkbid", "CHAR", "CHAR(7) NOT NULL")
+        addColumn("drug_name", "TEXT", "TEXT NOT NULL")
+        addColumn("approval_year", "INTEGER", "INTEGER")
+        addColumn("dili_concern", "INTEGER", "INTEGER")
+        addColumn("vdili_concern", "INTEGER", "INTEGER")
+        addColumn("severity_class", "INTEGER", "INTEGER")
+        addColumn("label_section", "TEXT", "TEXT")
+        addColumn("greene_annotation", "TEXT", "TEXT")
+        addColumn("sakatis_annotation", "TEXT", "TEXT")
+        addColumn("xu_annotation", "TEXT", "TEXT")
+        addColumn("zhu_annotation", "TEXT", "TEXT")
     }
 
-    ChemspaceTable() {
+    LTKBTable() {
         this(IOUtils.getConfiguration("CHEMCENTRAL_SCHEMA", "vendordbs"),
-                IOUtils.getConfiguration("CHEMCENTRAL_TABLE",  "chemspace"))
+                IOUtils.getConfiguration("CHEMCENTRAL_TABLE", "ltkb"))
     }
-
 }

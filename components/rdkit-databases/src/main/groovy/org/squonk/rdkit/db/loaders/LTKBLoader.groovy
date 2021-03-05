@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2021 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.squonk.rdkit.db.loaders
 import groovy.util.logging.Log
 import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.tables.LTKBTable
+import org.squonk.rdkit.db.impl.LTKBTable
 import org.squonk.util.IOUtils
 
 /** Loader for LKTB dataset.

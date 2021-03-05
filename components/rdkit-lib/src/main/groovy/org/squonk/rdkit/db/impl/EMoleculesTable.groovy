@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2021 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.squonk.rdkit.db.impl
 import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.MolSourceType
 import org.squonk.rdkit.db.RDKitTable
+import org.squonk.util.IOUtils
 
 /**
  * Created by timbo on 16/12/2015.
@@ -32,5 +33,10 @@ class EMoleculesTable extends RDKitTable {
                 FingerprintType.MORGAN_FEATURE_2])
         addColumn("version_id", "INTEGER", "INTEGER NOT NULL")
         addColumn("parent_id", "INTEGER", "INTEGER NOT NULL")
+    }
+
+    EMoleculesTable() {
+        this(IOUtils.getConfiguration("CHEMCENTRAL_SCHEMA", "vendordbs"),
+                IOUtils.getConfiguration("CHEMCENTRAL_TABLE", "emolecules"))
     }
 }
