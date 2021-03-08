@@ -279,17 +279,17 @@ public class OpenShiftRunner extends AbstractRunner {
                 }
                 for (PodCondition podCondition : podConditions) {
                     LOG.info(">>> podCondition=" + podCondition.toString());
-                    // Log any PodCondition message
+                    // Log PodCondition message and reason (may both be null)
                     String message = podCondition.getMessage();
-                    if (message != null) {
-                        LOG.info("PodCondition message=" + message);
-                    }
-                    // Firstly - has Pod completed?
+                    String reason = podCondition.getReason();
+                    LOG.info("Received PodCondition:" +
+                             " message='" + message + "' reason=" + reason);
+                    // Importantly - has the Pod completed?
                     // This will be recorded as 'PodCompleted' in its 'reason' field.
-                    String conditionReason = podCondition.getReason();
-                    if (conditionReason != null) {
-                        LOG.info("conditionReason=" + conditionReason);
-                        if (conditionReason.equals("PodCompleted")) {
+                    // If so break out.
+                    if (reason != null) {
+                        LOG.info("conditionReason=" + reason);
+                        if (reason.equals("PodCompleted")) {
                             setStage(PodWatcherStage.COMPLETE);
                             break;
                         }
@@ -300,7 +300,7 @@ public class OpenShiftRunner extends AbstractRunner {
                     // or, if it's already started, is it now RUNNING?
                     //      Indicated by finding 'Initialized' in the 'type' field
                     String conditionType = podCondition.getType();
-                    if (conditionType.equals("PodScheduled") && conditionReason == null) {
+                    if (conditionType.equals("PodScheduled") && reason == null) {
                         setStage(PodWatcherStage.STARTING);
                     } else if (stage == PodWatcherStage.STARTING
                                && conditionType.equals("Initialised")) {
