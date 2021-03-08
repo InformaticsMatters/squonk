@@ -185,25 +185,24 @@ public class OpenShiftRunner extends AbstractRunner {
         // Important stages for observation are: -
         //
         // WAITING - i.e. Pod hasn't found anywhere to run
-        // RUNNING - Pod is has been scheduled and has started
+        // RUNNING - Pod has been scheduled and has started
         // FINISHED - Finished, exit code available
         //
-        // If the Pod spends too long between WAITING and RUNNING you should
-        // consider cancelling the Pod as it's clearly having trouble
-        // (maybe with an ImagePullBackoff?)
+        // If the Pod spends too long between WAITING and RUNNING (i.e. in STARTING)
+        // you should consider cancelling the Pod as it's clearly having trouble.
 
         // Our 'stage'
         // We start in WAITING until the Pod's been scheduled.
-        private PodWatcherStage stage = PodWatcherStage.WAITING;
+        private volatile PodWatcherStage stage = PodWatcherStage.WAITING;
 
         // The exit code of the Pod's container.
         // Actually assigned when the container has terminated.
         // The default is to assume all is well.
-        private int containerExitCode = 0;
+        private volatile int containerExitCode = 0;
         // Has the watcher experienced an 'onClose()' exception? (#ch507).
         // If necessary, the user can act on this to replace the watcher.
-        private boolean onCloseException = false;
-        private String onCloseExceptionMessage = "";
+        private volatile boolean onCloseException = false;
+        private volatile String onCloseExceptionMessage = "";
 
         /**
          * Basic constructor.
@@ -217,14 +216,14 @@ public class OpenShiftRunner extends AbstractRunner {
         /**
          * Returns our PodWatcher stage
          *
-         * @return True is stage is 'Waiting'.
+         * @return the current stage.
          */
         PodWatcherStage getStage() {
             return stage;
         }
 
         private void setStage(PodWatcherStage newStage) {
-            LOG.info("Pod stage=" + newStage);
+            LOG.info("podName=" + podName + " newStage=" + newStage);
             stage = newStage;
         }
 
@@ -261,7 +260,7 @@ public class OpenShiftRunner extends AbstractRunner {
             PodStatus podStatus = resource.getStatus();
             // For debug (it's a large object)...
             if (OS_POD_DEBUG_MODE > 0) {
-                LOG.info("podStatus=" + podStatus.toString());
+                LOG.info("podName=" + podName + " podStatus=" + podStatus.toString());
             }
 
             // Check each PodCondition and its ContainerStatus array...
@@ -269,8 +268,6 @@ public class OpenShiftRunner extends AbstractRunner {
             //   PodCondition.reason is PodCompleted (That's good)
             // Or
             //   A type of 'PodScheduled' which means it's starting...
-            //      where the state is terminated
-            //      when we'll find an exitCode and reason
             List<PodCondition> podConditions = podStatus.getConditions();
             if (podConditions != null) {
                 for (PodCondition podCondition : podConditions) {
@@ -278,13 +275,12 @@ public class OpenShiftRunner extends AbstractRunner {
                     // Log PodCondition message and reason (may both be null)
                     String message = podCondition.getMessage();
                     String reason = podCondition.getReason();
-                    LOG.info("Received PodCondition:" +
-                             " message='" + message + "' reason=" + reason);
+                    LOG.info("podName=" + podName + " got PodCondition." +
+                             " message=\"" + message + "\" reason=" + reason);
                     // Importantly - has the Pod completed?
                     // This will be recorded as 'PodCompleted' in its 'reason' field.
-                    // If so break out.
+                    // If so set the new stage and break out.
                     if (reason != null) {
-                        LOG.info("conditionReason=" + reason);
                         if (reason.equals("PodCompleted")) {
                             setStage(PodWatcherStage.COMPLETE);
                             break;
@@ -324,7 +320,7 @@ public class OpenShiftRunner extends AbstractRunner {
                                 ContainerStateTerminated csTerm = cs.getTerminated();
                                 // The Pod's terminated (unexpectedly?)
                                 // We'll handle the exit code in the next block.
-                                LOG.info("Pod has Terminated" +
+                                LOG.info("podName=" + podName + " has Terminated" +
                                         " (exitCode=" + csTerm.getExitCode() +
                                         " reason='" + csTerm.getReason() + "')");
                                 setStage(PodWatcherStage.COMPLETE);
@@ -335,9 +331,8 @@ public class OpenShiftRunner extends AbstractRunner {
                 }
             }
 
-            // Ultimately ... we're waiting for the Pod to finish.
-            // From here we transition the stage from COMPLETE to FINISHED
-            // when the exit code's been retrieved.
+            // If COMPLETE, try to move the stage to FINISHED...
+            // (i.e. when the exit code's available).
             if (stage == PodWatcherStage.COMPLETE) {
 
                 // If we don't have a LogStream object (used to capture the
@@ -358,11 +353,6 @@ public class OpenShiftRunner extends AbstractRunner {
                 List<ContainerStatus> containerStatuses = podStatus.getContainerStatuses();
                 if (containerStatuses != null) {
                     for (ContainerStatus containerStatus : containerStatuses) {
-                        // Is there a 'waiting' record?
-//                        ContainerStateWaiting csWaiting = containerStatus.getState().getWaiting();
-//                        if (csWaiting != null && csWaiting.getReason().equals("ContainerCreating")) {
-//                            stage = "Starting";
-//                        }
                         // Do we have a terminated record?
                         ContainerStateTerminated csTerm = containerStatus.getState().getTerminated();
                         if (csTerm != null) {
@@ -917,17 +907,18 @@ public class OpenShiftRunner extends AbstractRunner {
                 }
             }
 
-            // Still waiting for the Pod to get running?
             // Wait until the Pod appears to be running...
             // But enforce a timeout if the Pod's been scheduled
             // but isn't running.
             if (!podIsRunning) {
                 PodWatcherStage pws = podWatcher.getStage();
+                // Pod is considered running (or even already complete)
+                // if its stage is not WAITING and not STARTING
                 if (pws != PodWatcherStage.WAITING && pws != PodWatcherStage.STARTING) {
                     podIsRunning = true;
                 } else if (pws == PodWatcherStage.STARTING) {
-                    // Pod has been scheduled (is starting)
-                    // but isn't running...
+                    // Pod has been scheduled (is starting) but isn't running.
+                    // Here we give it a limited time to get to the 'running' stage...
                     long now = System.currentTimeMillis();
                     long elapsedMins = (now - podStartTimeMillis) / 60000;
                     if (elapsedMins >= OS_POD_START_GRACE_PERIOD_M) {
