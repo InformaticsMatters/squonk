@@ -220,7 +220,9 @@ public class OpenShiftRunner extends AbstractRunner {
         }
 
         private void setStage(PodWatcherStage newStage) {
-            LOG.info("podName=" + podName + " newStage=" + newStage);
+            LOG.info("podName=" + podName +
+                    " newStage=" + newStage +
+                    " (stage=" + stage + ")");
             stage = newStage;
         }
 
@@ -257,7 +259,8 @@ public class OpenShiftRunner extends AbstractRunner {
             PodStatus podStatus = resource.getStatus();
             // For debug (it's a large object)...
             if (OS_POD_DEBUG_MODE > 0) {
-                LOG.info("podName=" + podName + " podStatus=" + podStatus.toString());
+                LOG.info("podName=" + podName +
+                         " podStatus=" + podStatus.toString());
             }
 
             // Check each PodCondition and its ContainerStatus array...
@@ -268,7 +271,10 @@ public class OpenShiftRunner extends AbstractRunner {
             List<PodCondition> podConditions = podStatus.getConditions();
             if (podConditions != null) {
                 for (PodCondition podCondition : podConditions) {
-                    LOG.info(">>> podCondition=" + podCondition.toString());
+                    if (OS_POD_DEBUG_MODE > 0) {
+                        LOG.info("podName=" + podName +
+                                 " podCondition=" + podCondition.toString());
+                    }
                     // Log PodCondition message and reason (may both be null)
                     String message = podCondition.getMessage();
                     String reason = podCondition.getReason();
@@ -294,7 +300,7 @@ public class OpenShiftRunner extends AbstractRunner {
                             && reason == null) {
                         setStage(PodWatcherStage.STARTING);
                     } else if (stage == PodWatcherStage.STARTING
-                            && conditionType.equals("Initialised")) {
+                            && conditionType.equals("Initialized")) {
                         setStage(PodWatcherStage.RUNNING);
                     }
                 }
@@ -309,7 +315,9 @@ public class OpenShiftRunner extends AbstractRunner {
                 if (containerStatuses != null) {
                     for (ContainerStatus containerStatus : containerStatuses) {
                         ContainerState cs = containerStatus.getState();
-                        LOG.info(">>> CS=" + cs.toString());
+                        if (OS_POD_DEBUG_MODE > 0) {
+                            LOG.info("podName=" + podName + " cs=" + cs.toString());
+                        }
                         if (cs != null) {
                             if (cs.getRunning() != null) {
                                 setStage(PodWatcherStage.RUNNING);
@@ -365,8 +373,6 @@ public class OpenShiftRunner extends AbstractRunner {
                     }
                 }
             }
-
-            LOG.info("podName=" + podName + " stage=" + stage);
 
         }
 
