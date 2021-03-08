@@ -273,10 +273,6 @@ public class OpenShiftRunner extends AbstractRunner {
             //      when we'll find an exitCode and reason
             List<PodCondition> podConditions = podStatus.getConditions();
             if (podConditions != null) {
-                // We're no longer 'Waiting'
-                if (stage == PodWatcherStage.WAITING) {
-                    setStage(PodWatcherStage.STARTING);
-                }
                 for (PodCondition podCondition : podConditions) {
                     LOG.info(">>> podCondition=" + podCondition.toString());
                     // Log PodCondition message and reason (may both be null)
@@ -294,16 +290,18 @@ public class OpenShiftRunner extends AbstractRunner {
                             break;
                         }
                     }
-                    // If it's not complete has it been scheduled (i.e. is it STARTING)?
+                    // If it's WAITING has it been scheduled (i.e. is it STARTING)?
                     //      Indicated by finding 'PodScheduled' in the 'type' field
                     //      and no 'reason'
                     // or, if it's already started, is it now RUNNING?
                     //      Indicated by finding 'Initialized' in the 'type' field
                     String conditionType = podCondition.getType();
-                    if (conditionType.equals("PodScheduled") && reason == null) {
+                    if (stage == PodWatcherStage.WAITING
+                            && conditionType.equals("PodScheduled")
+                            && reason == null) {
                         setStage(PodWatcherStage.STARTING);
                     } else if (stage == PodWatcherStage.STARTING
-                               && conditionType.equals("Initialised")) {
+                            && conditionType.equals("Initialised")) {
                         setStage(PodWatcherStage.RUNNING);
                     }
                 }
