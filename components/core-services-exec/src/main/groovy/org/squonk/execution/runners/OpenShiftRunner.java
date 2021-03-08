@@ -21,11 +21,11 @@ import com.github.dockerjava.api.model.Bind;
 import com.google.common.collect.EvictingQueue;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
+import io.fabric8.openshift.client.DefaultOpenShiftClient;
+import io.fabric8.openshift.client.OpenShiftClient;
 import org.squonk.util.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 
@@ -122,7 +122,7 @@ public class OpenShiftRunner extends AbstractRunner {
     // Time between checks on the 'job watcher' completion state.
     private static final long WATCHER_POLL_PERIOD_MILLIS = 1000;
 
-    private static KubernetesClient client;
+    private static OpenShiftClient client;
 
     // Objects used to watch the Pod's events and its logs
     private Watch watchObject;
@@ -1066,8 +1066,8 @@ public class OpenShiftRunner extends AbstractRunner {
     static {
 
         // Create the Kubernetes client...
-        LOG.info("Creating DefaultKubernetesClient...");
-        client = new DefaultKubernetesClient();
+        LOG.info("Creating client...");
+        client = new DefaultOpenShiftClient();
         LOG.info("Created.");
 
         // Get the preferred service account...
