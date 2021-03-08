@@ -170,15 +170,12 @@ public class OpenShiftRunner extends AbstractRunner {
         private String podName;
 
         // When a Pod is launched Kubernetes will ensure it passes
-        // through a number of step. It will need to be 'scheduled'
-        // (i.e. there must a sufficient cluster resource for it to run)
-        // after which it's pulled before being run. The user of this
-        // watcher may introduce a timeout so we advertise a number of
-        // 'Stages': -
+        // through a number of phases/states. Here we dilute the complexity
+        // into a number if 'stages': -
         //
         // - WAITING (Initial state and waiting to be scheduled)
         // - STARTING (Once it's been scheduled)
-        // - RUNNING (pulling, initialising - basically running)
+        // - RUNNING (pulling, initialising, running - basically running)
         // - COMPLETE (stopped)
         // - FINISHED (stopped and the Pod's exit code is available)
         //
