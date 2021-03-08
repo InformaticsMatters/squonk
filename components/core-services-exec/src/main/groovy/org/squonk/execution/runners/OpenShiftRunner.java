@@ -220,7 +220,7 @@ public class OpenShiftRunner extends AbstractRunner {
         private void setStage(PodWatcherStage newStage) {
             LOG.info("podName=" + podName +
                     " newStage=" + newStage +
-                    " (stage=" + stage + ")");
+                    " (prior stage=" + stage + ")");
             stage = newStage;
         }
 
@@ -269,15 +269,12 @@ public class OpenShiftRunner extends AbstractRunner {
             List<PodCondition> podConditions = podStatus.getConditions();
             if (podConditions != null) {
                 for (PodCondition podCondition : podConditions) {
+                    // Log PodCondition message and reason (may both be null)
+                    String reason = podCondition.getReason();
                     if (OS_POD_DEBUG_MODE > 0) {
                         LOG.info("podName=" + podName +
-                                 " podCondition=" + podCondition.toString());
+                                " podCondition=" + podCondition.toString());
                     }
-                    // Log PodCondition message and reason (may both be null)
-                    String message = podCondition.getMessage();
-                    String reason = podCondition.getReason();
-                    LOG.info("podName=" + podName + " got PodCondition." +
-                             " message=\"" + message + "\" reason=" + reason);
                     // Importantly - has the Pod completed?
                     // This will be recorded as 'PodCompleted' in its 'reason' field.
                     // If so set the new stage and break out.
@@ -455,7 +452,7 @@ public class OpenShiftRunner extends AbstractRunner {
     }
 
     /**
-     * Creates an OpenShift runner instance. Normally followed by a call to
+     * Creates a runner instance. Normally followed by a call to
      * init() and then execute().
      *
      * @param imageName       The Docker image to run.
