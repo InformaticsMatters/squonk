@@ -21,11 +21,11 @@ import com.github.dockerjava.api.model.Bind;
 import com.google.common.collect.EvictingQueue;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
-import io.fabric8.openshift.client.DefaultOpenShiftClient;
-import io.fabric8.openshift.client.OpenShiftClient;
 import org.squonk.util.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 
@@ -35,11 +35,11 @@ import java.util.*;
 import java.util.logging.Logger;
 
 /**
- * An OpenShift-based Docker image executor that expects inputs and outputs.
+ * A Kubernetes-based Docker image executor that expects inputs and outputs.
  * The runner relies on the presence of a Persistent Volume Claim (PVC) that
  * has been successfully bound.
  * <p/>
- * In order to run this within an OpenShift/Kubernetes cluster you will need:
+ * In order to run this within a Kubernetes cluster you will need:
  * - A project (named "squonk")
  * - A suitable service account with admin privileges (named "squonk")
  *
@@ -105,11 +105,9 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String OS_PROJECT;
     private static final String OS_SA;
 
-    // The OpenShift Job is given a period of time to start.
+    // The Job is given a period of time to start.
     // This time accommodates a reasonable time to pull the image
-    // from an external repository. We need to do this
-    // because I'm not sure, at the moment how to detect pull errors
-    // from within OpenShift - so this is 'belt-and-braces' protection.
+    // from an external repository and start.
     // Set via the environment with a default.
     // The value cannot be less than 1 (minute).
     private static final int OS_POD_START_GRACE_PERIOD_M;
@@ -124,7 +122,7 @@ public class OpenShiftRunner extends AbstractRunner {
     // Time between checks on the 'job watcher' completion state.
     private static final long WATCHER_POLL_PERIOD_MILLIS = 1000;
 
-    private static OpenShiftClient client;
+    private static KubernetesClient client;
 
     // Objects used to watch the Pod's events and its logs
     private Watch watchObject;
@@ -1067,9 +1065,9 @@ public class OpenShiftRunner extends AbstractRunner {
 
     static {
 
-        // Create the OpenShift client...
-        LOG.info("Creating DefaultOpenShiftClient...");
-        client = new DefaultOpenShiftClient();
+        // Create the Kubernetes client...
+        LOG.info("Creating DefaultKubernetesClient...");
+        client = new DefaultKubernetesClient();
         LOG.info("Created.");
 
         // Get the preferred service account...
